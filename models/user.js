@@ -22,7 +22,11 @@ module.exports = (sequelize, DataTypes) => {
     password: DataTypes.STRING,
     twofactorenabled: DataTypes.BOOLEAN,
     phrase: DataTypes.STRING,
-    mnemonic: DataTypes.STRING
+    mnemonic: DataTypes.STRING,
+    mnemonic_shown: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    }
   }, {
     sequelize,
     modelName: 'User',

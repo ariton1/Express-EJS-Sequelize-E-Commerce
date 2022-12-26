@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const bip39 = require('bip39');
 const { check, validationResult } = require('express-validator');
+const attachUser = require('../middlewares/attachUser');
 
 // Import the database models
 const db = require('../models');
@@ -52,13 +53,15 @@ router.get('/register', (req, res) => {
 	  username: req.body.username.toLowerCase(),
 	  password: hashedPassword,
 	  phrase: req.body.phrase,
-	  mnemonic: mnemonic
+	  mnemonic: mnemonic,
+	  roleId: role.id,
+	  mnemonic_shown: false
 	})
 	.then(user => {
 	// Generate a JWT and send it back to the client
 	const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: 86400 }); // expires in 24 hours
 	req.session.jwt = token;
-	res.render('mnemonic', { mnemonic: user.mnemonic });
+	res.redirect('/users/mnemonic');
 	})
 	.catch(error => {
 	// Check if the error is due to the username already existing
@@ -69,6 +72,20 @@ router.get('/register', (req, res) => {
 	  res.status(500).send({ error: error });
 	});
   });
+
+  router.get('/mnemonic', attachUser, (req, res) => {
+	if (req.user.mnemonic_shown) {
+		// If the mnemonic page has already been shown, redirect the user to the 2FA setup page
+		return res.redirect('/users/set-up-2fa');
+	  }
+	  
+	  // Render the mnemonic page
+	  res.render('mnemonic', { mnemonic: req.user.mnemonic });
+	  
+	  // Update the mnemonic_shown field to true in the database
+	  User.update({ mnemonic_shown: true }, { where: { id: req.user.id } });
+  });
+  
   
 
 module.exports = router;

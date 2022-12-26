@@ -11,10 +11,8 @@
     <h1 class="text-2xl font-bold text-center mb-4">Mnemonic</h1>
     <p class="text-center mb-4"><%= mnemonic %></p>
     <p class="text-center text-gray-600 text-sm">Please make sure to save your mnemonic in a safe place. You will need it to reset your password in the future.</p>
-    <form action="/save-mnemonic" method="post">
-      <div class="flex items-center justify-center mt-4">
-        <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">Save Mnemonic</button>
-      </div>
+    <form action="/users/set-up-2fa" method="post">
+      <button type="submit" class="btn btn-primary">Proceed</button>
     </form>
   </div>
 </body>
