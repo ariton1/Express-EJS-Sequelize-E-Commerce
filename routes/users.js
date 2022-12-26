@@ -81,16 +81,19 @@ router.post(
 			mnemonic_shown: false,
 		})
 			.then((user) => {
-				// Attach the user to the request object
-				req.user = user;
-
 				// Generate a JWT and send it back to the client
 				const token = jwt.sign(
 					{ id: user.id },
 					process.env.JWT_SECRET,
 					{ expiresIn: 86400 }
 				); // expires in 24 hours
-				req.session.jwt = token;
+				
+				 // Set the token in a cookie with an expiration date
+				 res.cookie('token', token, {
+					expires: new Date(Date.now() + 86400),
+					httpOnly: true
+				  });
+
 				// res.redirect(`/users/mnemonic?user=${user.id}`);
 				res.redirect("/users/mnemonic");
 			})
@@ -106,37 +109,24 @@ router.post(
 );
 
 router.get("/mnemonic", (req, res) => {
-	// const { user } = req.query;
-	const token = req.session.jwt.headers;
-	console.log("TOKENNNNN:", token);
+	// Get the token from the cookie
+	const token = req.cookies.token;
+	console.log('TOKEN: ', token);
 
-	let userId = "";
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-	jwt.verify(token, process.env.JWT_SECRET, (error, decoded) => {
-		if (error) {
-			return res.status(401).send("Unauthorized");
-		}
-	});
-	userId = decoded.id;
 
 	// Check if the user is authenticated
-	if (!req.session.jwt) {
+	if (!req.cookies.token) {
 		// If the user is not authenticated, redirect them to the login page
 		return res.redirect("/users/login");
 	}
 
-	// Find the user in the database
-	User.findByPk(userId)
-		.then((user) => {
-			// Render the mnemonic view and pass the user's mnemonic to the view as a local variable
-			res.render("mnemonic", { mnemonic: user.mnemonic });
-		})
-		.catch((error) => {
-			console.error(error);
-			res.status(500).send(
-				"An error occurred while retrieving the mnemonic. Please make a new account."
-			);
-		});
+	// Use the decoded token to get the user's mnemonic
+	User.findOne({ where: { id: decoded.id } }).then((user) => {
+		// Render the mnemonic page
+		res.render("mnemonic", { mnemonic: user.mnemonic });
+	  });
 });
 
 module.exports = router;

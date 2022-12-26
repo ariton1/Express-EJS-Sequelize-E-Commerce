@@ -7,6 +7,8 @@ const bodyParser = require("body-parser");
 const usersRouter = require("./routes/users");
 const flash = require("connect-flash");
 const session = require("express-session");
+const cookieSession = require("cookie-session");
+const cookieParser = require('cookie-parser');
 
 const sequelize = new Sequelize(
 	process.env.DB_DEV,
@@ -20,10 +22,21 @@ const sequelize = new Sequelize(
 
 app.use(flash());
 
-// Enable sessions
+app.use(cookieParser());
+
+// Enable cookies
 app.use(
+	cookieSession({
+		name: 'sessId',
+		secret: process.env.COOKIE_SECRET,
+		maxAge: 86400000, // expiration time in milliseconds (1 day)
+	})
+)
+
+// Enable sessions
+app.use( 
 	session({
-		secret: "ohambarotravallbrebir",
+		secret: process.env.SESSION_SECRET,
 		resave: false,
 		saveUninitialized: true,
 	})
