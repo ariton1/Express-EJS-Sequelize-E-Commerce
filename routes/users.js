@@ -12,7 +12,8 @@ const Role = db.Role;
 const User = db.User;
 
 router.get("/register", (req, res) => {
-	if (req.session.jwt) {
+	const token = req.cookies.token;
+	if (token) {
 		// If the user is authenticated, redirect them to the home page
 		return res.redirect("/");
 	}
@@ -87,14 +88,13 @@ router.post(
 					process.env.JWT_SECRET,
 					{ expiresIn: 86400 }
 				); // expires in 24 hours
-				
-				 // Set the token in a cookie with an expiration date
-				 res.cookie('token', token, {
-					expires: new Date(Date.now() + 86400),
-					httpOnly: true
-				  });
 
-				// res.redirect(`/users/mnemonic?user=${user.id}`);
+				// Set the token in a cookie with an expiration date
+				res.cookie("token", token, {
+					expires: new Date(Date.now() + 86400), // Expires in 24 hours
+					httpOnly: true, // Only accessible by the server
+				});
+
 				res.redirect("/users/mnemonic");
 			})
 			.catch((error) => {
@@ -108,25 +108,27 @@ router.post(
 	}
 );
 
-router.get("/mnemonic", (req, res) => {
-	// Get the token from the cookie
-	const token = req.cookies.token;
-	console.log('TOKEN: ', token);
-
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-
+router.get("/mnemonic", async (req, res) => {
 	// Check if the user is authenticated
 	if (!req.cookies.token) {
 		// If the user is not authenticated, redirect them to the login page
 		return res.redirect("/users/login");
 	}
 
-	// Use the decoded token to get the user's mnemonic
-	User.findOne({ where: { id: decoded.id } }).then((user) => {
-		// Render the mnemonic page
-		res.render("mnemonic", { mnemonic: user.mnemonic });
-	  });
+	// Get the token from the cookie
+	const token = req.cookies.token;
+
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const user = await User.findOne({ where: { id: decoded.id } });
+
+	if (user.mnemonic_shown) {
+		return res.redirect("/");
+	}
+
+	user.mnemonic_shown = true;
+	await user.save();
+
+	res.render("mnemonic", { mnemonic: user.mnemonic });
 });
 
 module.exports = router;
