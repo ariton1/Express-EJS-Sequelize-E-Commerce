@@ -1,9 +1,15 @@
 function require2FA(req, res, next) {
-	if (req.user.twofactor_enabled) {
-	  // Allow the request to proceed if 2FA is enabled
-	  next();
-	} else {
-	  // Redirect the user back to the 2FA setup page if 2FA is not enabled
-	  res.redirect('/users/set-up-2fa');
-	}
+	// Check if the user has 2FA enabled
+	User.findOne({where: {id: req.user.id}}).then(user => {
+	  if (user.twoFactorAuthEnabled) {
+		// 2FA is enabled, allow the request to proceed
+		next();
+	  } else {
+		// 2FA is not enabled, redirect the user to the 2FA setup route
+		res.redirect('/set-2fa');
+	  }
+	}).catch(err => {
+	  // Handle the error
+	  console.log(err);
+	});
   }

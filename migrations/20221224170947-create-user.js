@@ -18,9 +18,12 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      twofactorenabled: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
+      twoFactorEnabled: {
+        type:Sequelize.BOOLEAN,
+        default: false,
+      },
+      twoFactorAuthSecret: {
+        type: Sequelize.STRING,
       },
       phrase: {
         type: Sequelize.STRING,

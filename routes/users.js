@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 const bip39 = require("bip39");
 const { check, validationResult } = require("express-validator");
 require("dotenv").config();
+const speakeasy = require("speakeasy");
 
 // Import the database models
 const db = require("../models");
@@ -129,6 +130,32 @@ router.get("/mnemonic", async (req, res) => {
 	await user.save();
 
 	res.render("mnemonic", { mnemonic: user.mnemonic });
+});
+
+router.get("/set-2fa", async (req, res) => {
+	// Check if the user is authenticated
+	if (!req.cookies.token) {
+		// If the user is not authenticated, redirect them to the login page
+		return res.redirect("/users/login");
+	}
+
+	// Get the token from the cookie
+	const token = req.cookies.token;
+
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const user = await User.findOne({ where: { id: decoded.id } });
+
+	// Generate a secret and QR code for the user
+	const secret = speakeasy.generateSecret();
+
+	// Check if 2FA is already enabled for the user
+	if (user.twofactorenabled) {
+		// If 2FA is already enabled, redirect the user to the home page
+		return res.redirect("/");
+	}
+
+	// Render the 2FA setup page
+	res.render("set-2fa");
 });
 
 module.exports = router;
