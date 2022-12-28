@@ -186,9 +186,6 @@ router.post("/set-2fa", async (req, res) => {
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });
 
-	console.log("SECRET: ", req.body.secret);
-	console.log("2FA TOKEN: ", req.body.code);
-
 	const verified = speakeasy.totp.verify({
 		secret: req.body.secret,
 		encoding: "base32",
@@ -197,9 +194,9 @@ router.post("/set-2fa", async (req, res) => {
 
 	if (verified) {
 		user.twoFactorEnabled = true;
-		user.twoFactorAuthSecret = req.body.code;
+		user.twoFactorAuthSecret = req.body.secret;
 		user.save();
-		user.redirect("/");
+		res.redirect("/");
 	} else {
 		req.flash("error", "Invalid 2FA code");
 		res.redirect("/users/set-2fa");
