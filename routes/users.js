@@ -198,7 +198,8 @@ router.post("/set-2fa", async (req, res) => {
 	if (verified) {
 		user.twoFactorEnabled = true;
 		user.twoFactorAuthSecret = req.body.code;
-		user.twoFactorEnabled = res.redirect("/");
+		user.save();
+		user.redirect("/");
 	} else {
 		req.flash("error", "Invalid 2FA code");
 		res.redirect("/users/set-2fa");
