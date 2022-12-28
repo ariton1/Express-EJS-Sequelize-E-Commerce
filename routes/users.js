@@ -6,6 +6,7 @@ const bip39 = require("bip39");
 const { check, validationResult } = require("express-validator");
 require("dotenv").config();
 const speakeasy = require("speakeasy");
+const QRCode = require("qrcode");
 
 // Import the database models
 const db = require("../models");
@@ -145,8 +146,9 @@ router.get("/set-2fa", async (req, res) => {
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });
 
-	// Generate a secret and QR code for the user
-	const secret = speakeasy.generateSecret();
+	if (!user.mnemonic_shown) {
+		return res.redirect("/users/mnemonic");
+	}
 
 	// Check if 2FA is already enabled for the user
 	if (user.twofactorenabled) {
@@ -154,8 +156,53 @@ router.get("/set-2fa", async (req, res) => {
 		return res.redirect("/");
 	}
 
-	// Render the 2FA setup page
-	res.render("set-2fa");
+	// Generate a secret and QR code for the user
+	const secret = speakeasy.generateSecret({
+		length: 20,
+		encoding: "base32",
+	});
+
+	QRCode.toDataURL(secret.otpauth_url, (err, src) => {
+		if (err) {
+			res.send("Something went wrong. Please refresh the page");
+		}
+		// Render the 2FA setup page
+		res.render("set-2fa", {
+			qrCodeUrl: src,
+			secret: secret.base32,
+			error: req.flash("error"),
+		});
+	});
+});
+
+router.post("/set-2fa", async (req, res) => {
+	if (!req.cookies.token) {
+		return res.redirect("/users/login");
+	}
+
+	// Get the token from the cookie
+	const token = req.cookies.token;
+
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const user = await User.findOne({ where: { id: decoded.id } });
+
+	console.log("SECRET: ", req.body.secret);
+	console.log("2FA TOKEN: ", req.body.code);
+
+	const verified = speakeasy.totp.verify({
+		secret: req.body.secret,
+		encoding: "base32",
+		token: req.body.code, // 2FA code entered by user
+	});
+
+	if (verified) {
+		user.twoFactorEnabled = true;
+		user.twoFactorAuthSecret = req.body.code;
+		user.twoFactorEnabled = res.redirect("/");
+	} else {
+		req.flash("error", "Invalid 2FA code");
+		res.redirect("/users/set-2fa");
+	}
 });
 
 module.exports = router;
