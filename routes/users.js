@@ -13,6 +13,62 @@ const db = require("../models");
 const Role = db.Role;
 const User = db.User;
 
+router.get("/login", (req, res) => {
+	const token = req.cookies.token;
+	if (token) {
+		return res.redirect("/");
+	}
+	res.render("login", { flash: req.flash() });
+  });
+
+  router.post(
+	"/login",
+	[
+		// Validate the request body
+		check("username", "Please enter a valid username").isAlphanumeric(),
+		check("password", "Please enter a valid password").isLength({ min: 8 }),
+	],
+	async (req, res) => {
+		// Check for validation errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			// Set flash messages and redirect the user back to the login page
+			req.flash(
+				"error",
+				errors.array().map((error) => error.msg)
+			);
+			return res.redirect("/users/login");
+		}
+
+		// Find the user in the database
+		const user = await User.findOne({ where: { username: req.body.username } });
+		if (!user) {
+			req.flash("error", "Invalid username or password");
+			return res.redirect("/users/login");
+		}
+
+		// Check if the password is correct
+		const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+		if (!passwordIsValid) {
+			req.flash("error", "Invalid username or password");
+			return res.redirect("/users/login");
+		}
+
+		// If the username and password are correct, generate a JWT and send it back to the client
+		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+			expiresIn: 86400, // expires in 24 hours
+		});
+
+		// Set the token in a cookie with an expiration date
+		res.cookie("token", token, {
+			expires: new Date(Date.now() + 86400), // Expires in 24 hours
+			httpOnly: true, // Only accessible by the server
+		});
+
+		res.redirect("/");
+	}
+);
+
 router.get("/register", (req, res) => {
 	const token = req.cookies.token;
 	if (token) {
@@ -151,7 +207,7 @@ router.get("/set-2fa", async (req, res) => {
 	}
 
 	// Check if 2FA is already enabled for the user
-	if (user.twofactorenabled) {
+	if (user.twofactor_enabled) {
 		// If 2FA is already enabled, redirect the user to the home page
 		return res.redirect("/");
 	}
@@ -193,8 +249,8 @@ router.post("/set-2fa", async (req, res) => {
 	});
 
 	if (verified) {
-		user.twoFactorEnabled = true;
-		user.twoFactorAuthSecret = req.body.secret;
+		user.twofactor_enabled = true;
+		user.twofactor_secret = req.body.secret;
 		user.save();
 		res.redirect("/");
 	} else {

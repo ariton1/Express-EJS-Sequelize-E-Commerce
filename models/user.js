@@ -20,8 +20,8 @@ module.exports = (sequelize, DataTypes) => {
   User.init({
     username: DataTypes.STRING,
     password: DataTypes.STRING,
-    twoFactorEnabled: DataTypes.BOOLEAN,
-    twoFactorAuthSecret: DataTypes.STRING,
+    twofactor_enabled: DataTypes.BOOLEAN,
+    twofactor_secret: DataTypes.STRING,
     phrase: DataTypes.STRING,
     mnemonic: DataTypes.STRING,
     mnemonic_shown: {

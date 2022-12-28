@@ -6,7 +6,7 @@ function require2FA(req, res, next) {
 	// Check if the user has 2FA enabled
 	User.findOne({ where: { id: req.user.id } })
 		.then((user) => {
-			if (user.twoFactorEnabled) {
+			if (user.twofactor_enabled) {
 				// 2FA is enabled, allow the request to proceed
 				next();
 			} else {
