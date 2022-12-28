@@ -69,6 +69,14 @@ router.get("/login", (req, res) => {
 	}
 );
 
+router.get("/logout", (req, res) => {
+	// Clear the token from the cookie
+	res.clearCookie("token");
+  
+	// Redirect the user back to the login page
+	res.redirect("/users/login");
+  });
+
 router.get("/register", (req, res) => {
 	const token = req.cookies.token;
 	if (token) {
