@@ -8,7 +8,12 @@ const usersRouter = require("./routes/users");
 const flash = require("connect-flash");
 const session = require("express-session");
 const cookieSession = require("cookie-session");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+
+// Import the database models
+const db = require("./models");
+const User = db.User;
 
 const sequelize = new Sequelize(
 	process.env.DB_DEV,
@@ -27,14 +32,14 @@ app.use(cookieParser());
 // Enable cookies
 app.use(
 	cookieSession({
-		name: 'sessId',
+		name: "sessId",
 		secret: process.env.COOKIE_SECRET,
 		maxAge: 86400000, // expiration time in milliseconds (1 day)
 	})
-)
+);
 
 // Enable sessions
-app.use( 
+app.use(
 	session({
 		secret: process.env.SESSION_SECRET,
 		resave: false,
@@ -51,7 +56,16 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", "public/views");
 
-app.get("/", (req, res) => {
+app.get("/", async (req, res) => {
+	const token = req.cookies.token;
+	if (!token) {
+		res.redirect("/users/register");
+	}
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const user = await User.findOne({ where: { id: decoded.id } });
+	if (!user.twofactor_enabled) {
+		return res.redirect("/users/set-2fa");
+	}
 	res.render("index", { title: "My App" });
 });
 
