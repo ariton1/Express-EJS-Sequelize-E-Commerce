@@ -172,9 +172,7 @@ router.post(
 
 		// Generate a mnemonic
 		const mnemonic = bip39.generateMnemonic(strength=256);
-
 		const mnemonicKey = process.env.MNEMONIC_KEY;
-
 		const encryptedMnemonic = CryptoJS.AES.encrypt(mnemonic, mnemonicKey);
 
 		// Create a new user in the database
@@ -309,7 +307,10 @@ router.post("/set-2fa", async (req, res) => {
 
 	if (verified) {
 		user.twofactor_enabled = true;
-		user.twofactor_secret = req.body.secret;
+		// user.twofactor_secret = req.body.secret;
+		const mnemonicKey = process.env.MNEMONIC_KEY; // should change the name here
+		const encryptedSecret = CryptoJS.AES.encrypt(req.body.secret, mnemonicKey);
+		user.twofactor_secret = encryptedSecret.toString();
 		user.save();
 		res.redirect("/");
 	} else {
