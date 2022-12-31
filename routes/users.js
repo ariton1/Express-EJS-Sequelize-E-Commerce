@@ -54,7 +54,41 @@ router.get("/login", (req, res) => {
 			return res.redirect("/users/login");
 		}
 
-		// If the username and password are correct, generate a JWT and send it back to the client
+		// If the user hasn't set up 2FA yet, redirect them to the 2FA setup page
+		if (!user.twofactor_enabled) {
+			// Generate a JWT and set it in a cookie
+			const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+				expiresIn: 86400, // expires in 24 hours
+			});
+			res.cookie("token", token, {
+				expires: new Date(Date.now() + 86400), // Expires in 24 hours
+				httpOnly: true, // Only accessible by the server
+			});
+
+			return res.redirect('/users/set-2fa');
+		}
+
+		// If the user has set up 2FA, check if they have entered the correct 2FA code
+		const twofactor_secret = user.twofactor_secret;
+		const code = req.body.code;
+
+		if (!code) {
+			req.flash("error", "Please enter your 2FA code");
+			return res.redirect("/users/login");
+		}
+
+		const verified = speakeasy.totp.verify({
+			secret: twofactor_secret,
+			encoding: "base32",
+			token: code,
+		});
+
+		if (!verified) {
+			req.flash("error", "Invalid 2FA code");
+			return res.redirect("/users/login");
+		}
+
+		// If the username, password, and 2FA code are correct (if applicable), generate a JWT and send it back to the client
 		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
 			expiresIn: 86400, // expires in 24 hours
 		});
@@ -66,8 +100,8 @@ router.get("/login", (req, res) => {
 		});
 
 		res.redirect("/");
-	}
-);
+	});
+
 
 router.get("/logout", (req, res) => {
 	// Clear the token from the cookie
@@ -249,6 +283,11 @@ router.post("/set-2fa", async (req, res) => {
 
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });
+
+	// If the user has already set up 2FA, redirect them to the home page
+	if (user.twofactor_enabled) {
+		return res.redirect("/");
+	}
 
 	const verified = speakeasy.totp.verify({
 		secret: req.body.secret,

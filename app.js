@@ -59,12 +59,13 @@ app.set("views", "public/views");
 app.get("/", async (req, res) => {
 	const token = req.cookies.token;
 	if (!token) {
-		res.redirect("/users/register");
-	}
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-	const user = await User.findOne({ where: { id: decoded.id } });
-	if (!user.twofactor_enabled) {
-		return res.redirect("/users/set-2fa");
+		res.redirect("/users/login");
+	} else {
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const user = await User.findOne({ where: { id: decoded.id } });
+		if (!user.twofactor_enabled) {
+			return res.redirect("/users/set-2fa");
+		}
 	}
 	res.render("index", { title: "My App" });
 });
