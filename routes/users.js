@@ -7,6 +7,7 @@ const { check, validationResult } = require("express-validator");
 require("dotenv").config();
 const speakeasy = require("speakeasy");
 const QRCode = require("qrcode");
+const CryptoJS = require('crypto-js');
 
 // Import the database models
 const db = require("../models");
@@ -170,14 +171,18 @@ router.post(
 		}
 
 		// Generate a mnemonic
-		const mnemonic = bip39.generateMnemonic();
+		const mnemonic = bip39.generateMnemonic(strength=256);
+
+		const mnemonicKey = process.env.MNEMONIC_KEY;
+
+		const encryptedMnemonic = CryptoJS.AES.encrypt(mnemonic, mnemonicKey);
 
 		// Create a new user in the database
 		User.create({
 			username: req.body.username.toLowerCase(),
 			password: hashedPassword,
 			phrase: req.body.phrase,
-			mnemonic: mnemonic,
+			mnemonic: encryptedMnemonic.toString(),
 			roleId: role.id,
 			mnemonic_shown: false,
 		})
@@ -225,10 +230,17 @@ router.get("/mnemonic", async (req, res) => {
 		return res.redirect("/");
 	}
 
+	// Get the mnemonic key from the .env file
+	const mnemonicKey = process.env.MNEMONIC_KEY;
+
+	// Decrypt the mnemonic
+	const decrypted = CryptoJS.AES.decrypt(user.mnemonic, mnemonicKey);
+	const originalMnemonic = decrypted.toString(CryptoJS.enc.Utf8);
+
 	user.mnemonic_shown = true;
 	await user.save();
 
-	res.render("mnemonic", { mnemonic: user.mnemonic });
+	res.render("mnemonic", { mnemonic: originalMnemonic });
 });
 
 router.get("/set-2fa", async (req, res) => {

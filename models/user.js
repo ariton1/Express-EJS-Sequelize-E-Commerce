@@ -27,7 +27,7 @@ module.exports = (sequelize, DataTypes) => {
     mnemonic_shown: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
-    }
+    },
   }, {
     sequelize,
     modelName: 'User',
