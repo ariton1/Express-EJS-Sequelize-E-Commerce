@@ -11,6 +11,9 @@ const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 
+// Import middlewares
+const isLoggedIn = require("./middleware/isLoggedIn");
+
 // Import the database models
 const db = require("./models");
 const User = db.User;
@@ -49,22 +52,19 @@ app.use(
 // Use body-parser to parse request body
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
 app.use("/users", usersRouter);
 app.use(express.static("public"));
 
 app.set("view engine", "ejs");
 app.set("views", "public/views");
 
-app.get("/", async (req, res) => {
+app.get("/", isLoggedIn, async (req, res) => {
 	const token = req.cookies.token;
-	if (!token) {
-		res.redirect("/users/login");
-	} else {
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-		const user = await User.findOne({ where: { id: decoded.id } });
-		if (!user.twofactor_enabled) {
-			return res.redirect("/users/set-2fa");
-		}
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const user = await User.findOne({ where: { id: decoded.id } });
+	if (!user.twofactor_enabled) {
+		return res.redirect("/users/set-2fa");
 	}
 	res.render("index", { title: "My App" });
 });
