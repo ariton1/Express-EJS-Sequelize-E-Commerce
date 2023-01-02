@@ -26,7 +26,6 @@ const sequelize = new Sequelize(
 );
 
 app.use(flash());
-
 app.use(cookieParser());
 
 // Enable cookies
