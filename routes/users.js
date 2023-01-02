@@ -9,6 +9,9 @@ const speakeasy = require("speakeasy");
 const QRCode = require("qrcode");
 const CryptoJS = require('crypto-js');
 
+// Import middlewares
+const isLoggedIn = require("../middleware/isLoggedIn");
+
 // Import the database models
 const db = require("../models");
 const Role = db.Role;
@@ -19,7 +22,7 @@ router.get("/login", (req, res) => {
 	if (token) {
 		return res.redirect("/");
 	}
-	res.render("login", { flash: req.flash() });
+	res.render("users/login", { flash: req.flash() });
   });
 
   router.post(
@@ -118,7 +121,7 @@ router.get("/register", (req, res) => {
 		// If the user is authenticated, redirect them to the home page
 		return res.redirect("/");
 	}
-	res.render("register", { flash: req.flash() });
+	res.render("users/register", { flash: req.flash() });
 });
 
 router.post(
@@ -175,8 +178,13 @@ router.post(
 		const mnemonicKey = process.env.MNEMONIC_KEY;
 		const encryptedMnemonic = CryptoJS.AES.encrypt(mnemonic, mnemonicKey);
 
+		// Generate an UUID for the newly created user
+		const uuid = require('uuid');
+		const userId = uuid.v4();
+
 		// Create a new user in the database
 		User.create({
+			id: userId,
 			username: req.body.username.toLowerCase(),
 			password: hashedPassword,
 			phrase: req.body.phrase,
@@ -211,16 +219,8 @@ router.post(
 	}
 );
 
-router.get("/mnemonic", async (req, res) => {
-	// Check if the user is authenticated
-	if (!req.cookies.token) {
-		// If the user is not authenticated, redirect them to the login page
-		return res.redirect("/users/login");
-	}
-
-	// Get the token from the cookie
+router.get("/mnemonic", isLoggedIn, async (req, res) => {
 	const token = req.cookies.token;
-
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });
 
@@ -238,19 +238,11 @@ router.get("/mnemonic", async (req, res) => {
 	user.mnemonic_shown = true;
 	await user.save();
 
-	res.render("mnemonic", { mnemonic: originalMnemonic });
+	res.render("users/mnemonic", { mnemonic: originalMnemonic });
 });
 
-router.get("/set-2fa", async (req, res) => {
-	// Check if the user is authenticated
-	if (!req.cookies.token) {
-		// If the user is not authenticated, redirect them to the login page
-		return res.redirect("/users/login");
-	}
-
-	// Get the token from the cookie
+router.get("/set-2fa", isLoggedIn, async (req, res) => {
 	const token = req.cookies.token;
-
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });
 
@@ -275,7 +267,7 @@ router.get("/set-2fa", async (req, res) => {
 			res.send("Something went wrong. Please refresh the page");
 		}
 		// Render the 2FA setup page
-		res.render("set-2fa", {
+		res.render("users/set-2fa", {
 			qrCodeUrl: src,
 			secret: secret.base32,
 			error: req.flash("error"),
@@ -283,14 +275,8 @@ router.get("/set-2fa", async (req, res) => {
 	});
 });
 
-router.post("/set-2fa", async (req, res) => {
-	if (!req.cookies.token) {
-		return res.redirect("/users/login");
-	}
-
-	// Get the token from the cookie
+router.post("/set-2fa", isLoggedIn, async (req, res) => {
 	const token = req.cookies.token;
-
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });
 
