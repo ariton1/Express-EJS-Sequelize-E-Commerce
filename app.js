@@ -4,12 +4,15 @@ const port = 3000;
 require("dotenv").config();
 const Sequelize = require("sequelize");
 const bodyParser = require("body-parser");
-const usersRouter = require("./routes/users");
 const flash = require("connect-flash");
 const session = require("express-session");
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+
+// Import routes
+const usersRouter = require("./routes/users");
+const profileRouter = require("./routes/profile");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -54,6 +57,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use("/users", usersRouter);
+app.use("/profile", profileRouter)
 app.use(express.static("public"));
 
 app.set("view engine", "ejs");

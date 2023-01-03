@@ -16,3 +16,5 @@ router.get('/:uuid', async (req, res) => {
 	// Render the profile page and pass the user data to the template
 	res.render('profile', { user: user });
   });
+
+module.exports = router;

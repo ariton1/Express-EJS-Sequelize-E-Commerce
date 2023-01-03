@@ -73,7 +73,7 @@ router.get("/login", (req, res) => {
 		}
 
 		// If the user has set up 2FA, check if they have entered the correct 2FA code
-		const twofactor_secret = user.twofactor_secret;
+		const twofactor_secret = CryptoJS.AES.decrypt(user.twofactor_secret, process.env.MNEMONIC_KEY).toString(CryptoJS.enc.Utf8);
 		const code = req.body.code;
 
 		if (!code) {
