@@ -62,10 +62,10 @@ router.get("/login", (req, res) => {
 		if (!user.twofactor_enabled) {
 			// Generate a JWT and set it in a cookie
 			const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-				expiresIn: 86400, // expires in 24 hours
+				expiresIn: 864000, // expires in 24 hours
 			});
 			res.cookie("token", token, {
-				expires: new Date(Date.now() + 86400), // Expires in 24 hours
+				expires: new Date(Date.now() + 864000), // Expires in 24 hours
 				httpOnly: true, // Only accessible by the server
 			});
 
@@ -94,12 +94,12 @@ router.get("/login", (req, res) => {
 
 		// If the username, password, and 2FA code are correct (if applicable), generate a JWT and send it back to the client
 		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-			expiresIn: 86400, // expires in 24 hours
+			expiresIn: 864000, // expires in 24 hours
 		});
 
 		// Set the token in a cookie with an expiration date
 		res.cookie("token", token, {
-			expires: new Date(Date.now() + 86400), // Expires in 24 hours
+			expires: new Date(Date.now() + 864000), // Expires in 24 hours
 			httpOnly: true, // Only accessible by the server
 		});
 
@@ -197,12 +197,12 @@ router.post(
 				const token = jwt.sign(
 					{ id: user.id },
 					process.env.JWT_SECRET,
-					{ expiresIn: 86400 }
+					{ expiresIn: 864000 }
 				); // expires in 24 hours
 
 				// Set the token in a cookie with an expiration date
 				res.cookie("token", token, {
-					expires: new Date(Date.now() + 86400), // Expires in 24 hours
+					expires: new Date(Date.now() + 864000), // Expires in 24 hours
 					httpOnly: true, // Only accessible by the server
 				});
 
@@ -304,5 +304,18 @@ router.post("/set-2fa", isLoggedIn, async (req, res) => {
 		res.redirect("/users/set-2fa");
 	}
 });
+
+router.get("/settings", isLoggedIn, async (req, res) => {
+	// Get and Verify the JWT
+	const token = req.cookies.token;
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const userId = decoded.id;
+
+	// Fetch the user's profile data from the database using their id
+	const user = await User.findOne({ where: { id: userId } });
+
+	// Render the settings page and pass the user data to the template
+	res.render('users/settings', { user: user });
+})
 
 module.exports = router;

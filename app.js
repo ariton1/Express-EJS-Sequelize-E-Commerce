@@ -12,7 +12,6 @@ const jwt = require("jsonwebtoken");
 
 // Import routes
 const usersRouter = require("./routes/users");
-const profileRouter = require("./routes/profile");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -57,7 +56,6 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 app.use("/users", usersRouter);
-app.use("/profile", profileRouter)
 app.use(express.static("public"));
 
 app.set("view engine", "ejs");
@@ -70,7 +68,7 @@ app.get("/", isLoggedIn, async (req, res) => {
 	if (!user.twofactor_enabled) {
 		return res.redirect("/users/set-2fa");
 	}
-	res.render("index", { title: "My App" });
+	res.render("index", { title: "Home" });
 });
 
 sequelize
