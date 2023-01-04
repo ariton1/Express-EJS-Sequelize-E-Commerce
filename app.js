@@ -15,6 +15,7 @@ const usersRouter = require("./routes/users");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
+const require2FA = require("./middleware/require2FA");
 
 // Import the database models
 const db = require("./models");
@@ -61,7 +62,7 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", "public/views");
 
-app.get("/", isLoggedIn, async (req, res) => {
+app.get("/", isLoggedIn, require2FA, async (req, res) => {
 	const token = req.cookies.token;
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const user = await User.findOne({ where: { id: decoded.id } });

@@ -11,6 +11,7 @@ const CryptoJS = require('crypto-js');
 
 // Import middlewares
 const isLoggedIn = require("../middleware/isLoggedIn");
+const require2FA = require("../middleware/require2FA");
 
 // Import the database models
 const db = require("../models");
@@ -305,7 +306,7 @@ router.post("/set-2fa", isLoggedIn, async (req, res) => {
 	}
 });
 
-router.get("/settings", isLoggedIn, async (req, res) => {
+router.get("/settings", isLoggedIn, require2FA, async (req, res) => {
 	// Get and Verify the JWT
 	const token = req.cookies.token;
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
