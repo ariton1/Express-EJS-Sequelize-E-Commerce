@@ -62,13 +62,7 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", "public/views");
 
-app.get("/", isLoggedIn, require2FA, async (req, res) => {
-	const token = req.cookies.token;
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-	const user = await User.findOne({ where: { id: decoded.id } });
-	if (!user.twofactor_enabled) {
-		return res.redirect("/users/set-2fa");
-	}
+app.get("/", isLoggedIn, require2FA, (req, res) => {
 	res.render("index", { title: "Home" });
 });
 
@@ -80,10 +74,6 @@ sequelize
 	.catch((err) => {
 		console.error("Unable to connect to the database:", err);
 	});
-
-app.get("/", (req, res) => {
-	res.send("Hello World!");
-});
 
 app.listen(port, () => {
 	console.log(`App listening at http://localhost:${port}`);
