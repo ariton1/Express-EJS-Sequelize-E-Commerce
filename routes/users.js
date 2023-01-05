@@ -315,8 +315,65 @@ router.get("/settings", isLoggedIn, require2FA, async (req, res) => {
 	// Fetch the user's profile data from the database using their id
 	const user = await User.findOne({ where: { id: userId } });
 
+	//Fetch the user's role
+	const role = await Role.findOne({ where: { id: user.roleId } })
+
 	// Render the settings page and pass the user data to the template
-	res.render('users/settings', { user: user });
+	res.render('users/settings/settings', { user: user, role: role });
+})
+
+router.get("/settings/change-password", isLoggedIn, require2FA, (req, res) => {
+	// Render the change password form
+	res.render("users/settings/change-password");
+  });
+
+router.post("/settings/change-password", isLoggedIn, require2FA, [
+	check(
+		"password",
+		"Password must have at least 8 characters and contain at least 1 uppercase character, 1 lowercase character, 1 number, and 1 symbol"
+	)
+		.isLength({ min: 8, max: 32 })
+		.matches(
+			/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/,
+			"i"
+		),
+	check("confirmPassword", "Passwords do not match").custom(
+		(value, { req }) => value === req.body.password
+	),
+], async (req, res) => {
+	// Find the user in the database
+	const token = req.cookies.token;
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const user = await User.findOne({ where: { id: decoded.id } });
+	// Check if the user exists
+	if (!user) {
+		req.flash("error", "User not found");
+		return res.redirect("/settings/change-password");
+	}
+
+// Check if the provided current password is correct
+const passwordMatch = bcrypt.compareSync(req.body.currentPassword, user.password);
+if (!passwordMatch) {
+	req.flash("error", "Incorrect current password");
+	return res.redirect("/settings/change-password");
+}
+
+// Check if the new password meets the required complexity
+const passwordErrors = validationResult(req).array();
+if (passwordErrors.length > 0) {
+	req.flash("error", passwordErrors.map((error) => error.msg));
+	return res.redirect("/settings/change-password");
+}
+
+// Hash the new password
+const hashedPassword = bcrypt.hashSync(req.body.newPassword, 10);
+
+// Update the user's password in the database
+await user.update({ password: hashedPassword });
+
+// Set a success message and redirect the user back to the settings page
+req.flash("success", "Password changed successfully");
+res.redirect("/settings");
 })
 
 module.exports = router;
