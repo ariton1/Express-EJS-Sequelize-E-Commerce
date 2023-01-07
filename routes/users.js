@@ -418,4 +418,127 @@ router.post(
 	}
 );
 
+router.get("/settings/change-2fa", isLoggedIn, require2FA, async (req, res) => {
+	// Render the change 2FA form
+	res.render("users/settings/change-2fa", { flash: req.flash() });
+});
+
+router.post(
+	"/settings/change-2fa",
+	isLoggedIn,
+	require2FA,
+	async (req, res) => {
+		// Find the user in the database
+		const token = req.cookies.token;
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const user = await User.findOne({ where: { id: decoded.id } });
+
+		// Check if the user exists
+		if (!user) {
+			req.flash("error", "User not found");
+			return res.redirect("/users/settings/change-2fa");
+		}
+
+		// Check if the provided 2FA code is correct
+		const twofactor_secret = CryptoJS.AES.decrypt(
+			user.twofactor_secret,
+			process.env.MNEMONIC_KEY
+		).toString(CryptoJS.enc.Utf8);
+		const code = req.body.code;
+
+		if (!code) {
+			req.flash("error", "Please enter your current 2FA code");
+			return res.redirect("/users/settings/change-2fa");
+		}
+
+		const verified = speakeasy.totp.verify({
+			secret: twofactor_secret,
+			encoding: "base32",
+			token: code,
+		});
+
+		if (!verified) {
+			req.flash("error", "Incorrect 2FA code");
+			return res.redirect("/users/settings/change-2fa");
+		}
+
+		// Update the user's 2FA settings in the database
+		await user.update({
+			twofactor_enabled: false,
+			twofactor_secret: null,
+		});
+		user.save();
+		res.redirect("/users/set-2fa");
+	}
+);
+
+router.get("/settings/delete-account", isLoggedIn, require2FA, (req, res) => {
+	res.render("users/settings/delete-account", { flash: req.flash() });
+});
+
+router.post(
+	"/settings/delete-account",
+	isLoggedIn,
+	require2FA,
+	[
+		// Validate the request body
+		check("password", "Please enter your current password").notEmpty(),
+		check("mnemonic", "Please enter your mnemonic").notEmpty(),
+	],
+	async (req, res) => {
+		// Check for validation errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			// Set flash messages and redirect the user back to the delete account page
+			req.flash(
+				"error",
+				errors.array().map((error) => error.msg)
+			);
+			return res.redirect("/users/settings/delete-account");
+		}
+
+		// Find the user in the database
+		const token = req.cookies.token;
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const user = await User.findOne({ where: { id: decoded.id } });
+
+		// Check if the user exists
+		if (!user) {
+			req.flash("error", "User not found");
+			return res.redirect("/users/settings/delete-account");
+		}
+
+		// Check if the provided password is correct
+		const passwordMatch = bcrypt.compareSync(
+			req.body.password,
+			user.password
+		);
+		if (!passwordMatch) {
+			req.flash("error", "Incorrect password");
+			return res.redirect("/users/settings/delete-account");
+		}
+
+		// Check if the provided mnemonic is correct
+		const mnemonicMatch =
+			CryptoJS.AES.decrypt(
+				user.mnemonic,
+				process.env.MNEMONIC_KEY
+			).toString(CryptoJS.enc.Utf8) === req.body.mnemonic;
+		if (!mnemonicMatch) {
+			req.flash("error", "Incorrect mnemonic");
+			return res.redirect("/users/settings/delete-account");
+		}
+
+		// Delete the user's account
+		await user.destroy();
+
+		// Clear the user's cookies
+		res.clearCookie("token");
+
+		// Redirect the user to the login page
+		req.flash("success", "Account deleted successfully");
+		res.redirect("/users/login");
+	}
+);
+
 module.exports = router;
