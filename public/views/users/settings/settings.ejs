@@ -6,8 +6,13 @@
 		<title>Settings</title>
 		<link rel="stylesheet" href="../../stylesheets/style.css" />
 	</head>
-	<body class="bg-gray-100 h-screen flex items-center justify-center">
+	<body class="bg-gray-100 h-screen flex items-center justify-center align-middle">
 		<div class="rounded-md p-8 bg-white shadow-md">
+			<% if (flash.success) { %>
+				<p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+					<%= flash.success %>
+				</p>
+			<% } %>
 			<h1 class="text-2xl font-bold text-center mb-4">Settings</h1>
 			<p>Username: <%= user.username %></p>
 			<p>Creation date: <%= user.createdAt.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></p>

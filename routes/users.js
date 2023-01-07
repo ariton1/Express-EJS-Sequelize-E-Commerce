@@ -7,7 +7,7 @@ const { check, validationResult } = require("express-validator");
 require("dotenv").config();
 const speakeasy = require("speakeasy");
 const QRCode = require("qrcode");
-const CryptoJS = require('crypto-js');
+const CryptoJS = require("crypto-js");
 
 // Import middlewares
 const isLoggedIn = require("../middleware/isLoggedIn");
@@ -24,9 +24,9 @@ router.get("/login", (req, res) => {
 		return res.redirect("/");
 	}
 	res.render("users/login", { flash: req.flash() });
-  });
+});
 
-  router.post(
+router.post(
 	"/login",
 	[
 		// Validate the request body
@@ -46,14 +46,19 @@ router.get("/login", (req, res) => {
 		}
 
 		// Find the user in the database
-		const user = await User.findOne({ where: { username: req.body.username } });
+		const user = await User.findOne({
+			where: { username: req.body.username },
+		});
 		if (!user) {
 			req.flash("error", "Invalid username or password");
 			return res.redirect("/users/login");
 		}
 
 		// Check if the password is correct
-		const passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
+		const passwordIsValid = bcrypt.compareSync(
+			req.body.password,
+			user.password
+		);
 		if (!passwordIsValid) {
 			req.flash("error", "Invalid username or password");
 			return res.redirect("/users/login");
@@ -70,11 +75,14 @@ router.get("/login", (req, res) => {
 				httpOnly: true, // Only accessible by the server
 			});
 
-			return res.redirect('/users/set-2fa');
+			return res.redirect("/users/set-2fa");
 		}
 
 		// If the user has set up 2FA, check if they have entered the correct 2FA code
-		const twofactor_secret = CryptoJS.AES.decrypt(user.twofactor_secret, process.env.MNEMONIC_KEY).toString(CryptoJS.enc.Utf8);
+		const twofactor_secret = CryptoJS.AES.decrypt(
+			user.twofactor_secret,
+			process.env.MNEMONIC_KEY
+		).toString(CryptoJS.enc.Utf8);
 		const code = req.body.code;
 
 		if (!code) {
@@ -105,16 +113,16 @@ router.get("/login", (req, res) => {
 		});
 
 		res.redirect("/");
-	});
-
+	}
+);
 
 router.get("/logout", (req, res) => {
 	// Clear the token from the cookie
 	res.clearCookie("token");
-  
+
 	// Redirect the user back to the login page
 	res.redirect("/users/login");
-  });
+});
 
 router.get("/register", (req, res) => {
 	const token = req.cookies.token;
@@ -175,12 +183,12 @@ router.post(
 		}
 
 		// Generate a mnemonic
-		const mnemonic = bip39.generateMnemonic(strength=256);
+		const mnemonic = bip39.generateMnemonic((strength = 256));
 		const mnemonicKey = process.env.MNEMONIC_KEY;
 		const encryptedMnemonic = CryptoJS.AES.encrypt(mnemonic, mnemonicKey);
 
 		// Generate an UUID for the newly created user
-		const uuid = require('uuid');
+		const uuid = require("uuid");
 		const userId = uuid.v4();
 
 		// Create a new user in the database
@@ -296,7 +304,10 @@ router.post("/set-2fa", isLoggedIn, async (req, res) => {
 		user.twofactor_enabled = true;
 		// user.twofactor_secret = req.body.secret;
 		const mnemonicKey = process.env.MNEMONIC_KEY; // should change the name here
-		const encryptedSecret = CryptoJS.AES.encrypt(req.body.secret, mnemonicKey);
+		const encryptedSecret = CryptoJS.AES.encrypt(
+			req.body.secret,
+			mnemonicKey
+		);
 		user.twofactor_secret = encryptedSecret.toString();
 		user.save();
 		res.redirect("/");
@@ -316,64 +327,95 @@ router.get("/settings", isLoggedIn, require2FA, async (req, res) => {
 	const user = await User.findOne({ where: { id: userId } });
 
 	//Fetch the user's role
-	const role = await Role.findOne({ where: { id: user.roleId } })
+	const role = await Role.findOne({ where: { id: user.roleId } });
 
 	// Render the settings page and pass the user data to the template
-	res.render('users/settings/settings', { user: user, role: role });
-})
+	res.render("users/settings/settings", {
+		user: user,
+		role: role,
+		flash: req.flash(),
+	});
+});
 
 router.get("/settings/change-password", isLoggedIn, require2FA, (req, res) => {
 	// Render the change password form
-	res.render("users/settings/change-password");
-  });
+	res.render("users/settings/change-password", { flash: req.flash() });
+});
 
-router.post("/settings/change-password", isLoggedIn, require2FA, [
-	check(
-		"password",
-		"Password must have at least 8 characters and contain at least 1 uppercase character, 1 lowercase character, 1 number, and 1 symbol"
-	)
-		.isLength({ min: 8, max: 32 })
-		.matches(
-			/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/,
-			"i"
+router.post(
+	"/settings/change-password",
+	isLoggedIn,
+	require2FA,
+	[
+		check(
+			"currentPassword",
+			"Please provide your current password"
+		).notEmpty(),
+		check(
+			"newPassword",
+			"Password must have at least 8 characters and contain at least 1 uppercase character, 1 lowercase character, 1 number, and 1 symbol"
+		)
+			.isLength({ min: 8, max: 32 })
+			.matches(
+				/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/,
+				"i"
+			),
+		check("confirmPassword", "Passwords do not match").custom(
+			(value, { req }) => value === req.body.newPassword
 		),
-	check("confirmPassword", "Passwords do not match").custom(
-		(value, { req }) => value === req.body.password
-	),
-], async (req, res) => {
-	// Find the user in the database
-	const token = req.cookies.token;
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-	const user = await User.findOne({ where: { id: decoded.id } });
-	// Check if the user exists
-	if (!user) {
-		req.flash("error", "User not found");
-		return res.redirect("/settings/change-password");
+	],
+	async (req, res) => {
+		// Find the user in the database
+		const token = req.cookies.token;
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const user = await User.findOne({ where: { id: decoded.id } });
+
+		// Check for validation errors
+		const errors = validationResult(req);
+		if (!errors.isEmpty()) {
+			// Set flash messages and redirect the user back to the register page
+			req.flash(
+				"error",
+				errors.array().map((error) => error.msg)
+			);
+			return res.redirect("/users/settings/change-password");
+		}
+
+		// Check if the user exists
+		if (!user) {
+			req.flash("error", "User not found");
+			return res.redirect("/users/settings/change-password");
+		}
+
+		// Check if the provided current password is correct
+		const passwordMatch = bcrypt.compareSync(
+			req.body.currentPassword,
+			user.password
+		);
+		if (!passwordMatch) {
+			req.flash("error", "Incorrect current password");
+			return res.redirect("/users/settings/change-password");
+		}
+
+		// Check if the new password is the same as the old password
+		if (bcrypt.compareSync(req.body.newPassword, user.password)) {
+			req.flash(
+				"error",
+				"New password cannot be the same as the old password"
+			);
+			return res.redirect("/users/settings/change-password");
+		}
+
+		// Hash the new password
+		const hashedPassword = bcrypt.hashSync(req.body.newPassword, 10);
+
+		// Update the user's password in the database
+		await user.update({ password: hashedPassword });
+
+		// Set a success message and redirect the user back to the settings page
+		req.flash("success", "Password changed successfully");
+		res.redirect("/users/settings");
 	}
-
-// Check if the provided current password is correct
-const passwordMatch = bcrypt.compareSync(req.body.currentPassword, user.password);
-if (!passwordMatch) {
-	req.flash("error", "Incorrect current password");
-	return res.redirect("/settings/change-password");
-}
-
-// Check if the new password meets the required complexity
-const passwordErrors = validationResult(req).array();
-if (passwordErrors.length > 0) {
-	req.flash("error", passwordErrors.map((error) => error.msg));
-	return res.redirect("/settings/change-password");
-}
-
-// Hash the new password
-const hashedPassword = bcrypt.hashSync(req.body.newPassword, 10);
-
-// Update the user's password in the database
-await user.update({ password: hashedPassword });
-
-// Set a success message and redirect the user back to the settings page
-req.flash("success", "Password changed successfully");
-res.redirect("/settings");
-})
+);
 
 module.exports = router;
