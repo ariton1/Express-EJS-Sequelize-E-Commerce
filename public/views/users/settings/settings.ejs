@@ -1,33 +1,26 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>Settings</title>
-		<link rel="stylesheet" href="../../stylesheets/style.css" />
-	</head>
-	<body class="bg-gray-100 h-screen flex items-center justify-center align-middle">
-		<div class="rounded-md p-8 bg-white shadow-md">
-			<% if (flash.success) { %>
-				<p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
-					<%= flash.success %>
-				</p>
-			<% } %>
-			<h1 class="text-2xl font-bold text-center mb-4">Settings</h1>
-			<p>Username: <%= user.username %></p>
-			<p>Creation date: <%= user.createdAt.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></p>
-			<p>Role: <%= role.name %></p>
-			<p class="my-4">
-				<a href="/users/settings/change-password" class="block px-4 py-2 font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">Change password</a>
+<% title = "Settings" %>
+<%- include('../../partials/header'); %>
+<%- include ('../../partials/navbar'); %>
+	<div class="rounded-md p-8 bg-white shadow-md">
+		<% if (flash.success) { %>
+			<p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+				<%= flash.success %>
 			</p>
-			<p class="my-4">
-				<a href="/users/settings/change-2fa" class="block px-4 py-2 font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-400 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">Change 2FA secret</a>
-			</p>
-			<p class="my-4">
-				<a href="/users/settings/delete-account" class="block px-4 py-2 font-semibold bg-red-600 text-white rounded-md hover:bg-red-500 focus:outline-none focus:shadow-outline-red active:bg-red-800">Delete account</a>
-			</p>
-		</div>
-			</p>
-		</div>
-	</body>
-</html>
+		<% } %>
+		<h1 class="text-2xl font-bold text-center mb-4">Settings</h1>
+		<p>Username: <%= user.username %></p>
+		<p>Creation date: <%= user.createdAt.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) %></p>
+		<p>Role: <%= role.name %></p>
+		<p class="my-4">
+			<a href="/users/settings/change-password" class="block px-4 py-2 font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">Change password</a>
+		</p>
+		<p class="my-4">
+			<a href="/users/settings/change-2fa" class="block px-4 py-2 font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-400 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">Change 2FA secret</a>
+		</p>
+		<p class="my-4">
+			<a href="/users/settings/delete-account" class="block px-4 py-2 font-semibold bg-red-600 text-white rounded-md hover:bg-red-500 focus:outline-none focus:shadow-outline-red active:bg-red-800">Delete account</a>
+		</p>
+	</div>
+		</p>
+	</div>
+	<%- include('../../partials/footer'); %>

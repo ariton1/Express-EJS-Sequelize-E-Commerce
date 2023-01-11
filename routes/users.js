@@ -23,7 +23,7 @@ router.get("/login", (req, res) => {
 	if (token) {
 		return res.redirect("/");
 	}
-	res.render("users/login", { flash: req.flash() });
+	res.render("users/login", { flash: req.flash(), role: null });
 });
 
 router.post(
@@ -130,7 +130,7 @@ router.get("/register", (req, res) => {
 		// If the user is authenticated, redirect them to the home page
 		return res.redirect("/");
 	}
-	res.render("users/register", { flash: req.flash() });
+	res.render("users/register", { flash: req.flash(), role: null });
 });
 
 router.post(
@@ -229,9 +229,16 @@ router.post(
 );
 
 router.get("/mnemonic", isLoggedIn, async (req, res) => {
-	const token = req.cookies.token;
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-	const user = await User.findOne({ where: { id: decoded.id } });
+		// Get and Verify the JWT
+		const token = req.cookies.token;
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const userId = decoded.id;
+	
+		// Fetch the user's profile data from the database using their id
+		const user = await User.findOne({ where: { id: userId } });
+	
+		//Fetch the user's role
+		const role = await Role.findOne({ where: { id: user.roleId } });
 
 	if (user.mnemonic_shown) {
 		return res.redirect("/");
@@ -247,13 +254,20 @@ router.get("/mnemonic", isLoggedIn, async (req, res) => {
 	user.mnemonic_shown = true;
 	await user.save();
 
-	res.render("users/mnemonic", { mnemonic: originalMnemonic });
+	res.render("users/mnemonic", { mnemonic: originalMnemonic, role: role });
 });
 
 router.get("/set-2fa", isLoggedIn, async (req, res) => {
+	// Get and Verify the JWT
 	const token = req.cookies.token;
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-	const user = await User.findOne({ where: { id: decoded.id } });
+	const userId = decoded.id;
+
+	// Fetch the user's profile data from the database using their id
+	const user = await User.findOne({ where: { id: userId } });
+
+	//Fetch the user's role
+	const role = await Role.findOne({ where: { id: user.roleId } });
 
 	if (!user.mnemonic_shown) {
 		return res.redirect("/users/mnemonic");
@@ -280,6 +294,7 @@ router.get("/set-2fa", isLoggedIn, async (req, res) => {
 			qrCodeUrl: src,
 			secret: secret.base32,
 			error: req.flash("error"),
+			role: role,
 		});
 	});
 });
@@ -337,9 +352,19 @@ router.get("/settings", isLoggedIn, require2FA, async (req, res) => {
 	});
 });
 
-router.get("/settings/change-password", isLoggedIn, require2FA, (req, res) => {
+router.get("/settings/change-password", isLoggedIn, require2FA, async (req, res) => {
 	// Render the change password form
-	res.render("users/settings/change-password", { flash: req.flash() });
+		// Get and Verify the JWT
+		const token = req.cookies.token;
+		const decoded = jwt.verify(token, process.env.JWT_SECRET);
+		const userId = decoded.id;
+	
+		// Fetch the user's profile data from the database using their id
+		const user = await User.findOne({ where: { id: userId } });
+	
+		//Fetch the user's role
+		const role = await Role.findOne({ where: { id: user.roleId } });
+	res.render("users/settings/change-password", { flash: req.flash(), role: role });
 });
 
 router.post(
@@ -483,6 +508,9 @@ router.post(
 	[
 		// Validate the request body
 		check("password", "Please enter your current password").notEmpty(),
+		check("confirmPassword", "Passwords do not match")
+			.custom((value, { req }) => value === req.body.password)
+			.notEmpty(),
 		check("mnemonic", "Please enter your mnemonic").notEmpty(),
 	],
 	async (req, res) => {

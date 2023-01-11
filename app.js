@@ -20,6 +20,7 @@ const require2FA = require("./middleware/require2FA");
 // Import the database models
 const db = require("./models");
 const User = db.User;
+const Role = db.Role;
 
 const sequelize = new Sequelize(
 	process.env.DB_DEV,
@@ -62,8 +63,19 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", "public/views");
 
-app.get("/", isLoggedIn, require2FA, (req, res) => {
-	res.render("index", { title: "Home" });
+app.get("/", isLoggedIn, require2FA, async (req, res) => {
+	// Get and Verify the JWT
+	const token = req.cookies.token;
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const userId = decoded.id;
+
+	// Fetch the user's profile data from the database using their id
+	const user = await User.findOne({ where: { id: userId } });
+
+	//Fetch the user's role
+	const role = await Role.findOne({ where: { id: user.roleId } });
+
+	res.render("index", { role: role });
 });
 
 sequelize

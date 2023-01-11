@@ -1,0 +1,23 @@
+<nav class="bg-gray-900 shadow-md font-sans py-4 px-8">
+    <div class="mx-auto flex items-center justify-between">
+      <div class="flex items-center">
+        <a href="/" class="text-2xl font-bold text-white">CODEX</a>
+      </div>
+      <div class="flex items-center">
+        <% if (role) { %>
+          <% if (role.name === 'admin') { %>
+            <a href="/admin/dashboard" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Dashboard</a>
+          <% } %>
+          <% if (role.name === 'vendor') { %>
+            <a href="/vendor/create-product" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Create New Product</a>
+          <% } %>
+          <a href="/users/settings" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Account Settings</a>
+          <a href="/users/logout" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Logout</a>
+        <% } else { %>
+          <a href="/users/login" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Login</a>
+          <a href="/users/register" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Register</a>
+        <% } %>
+        </div>
+    </div>
+</nav>
+  
