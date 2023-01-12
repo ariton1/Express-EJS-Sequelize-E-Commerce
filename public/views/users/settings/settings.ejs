@@ -17,10 +17,16 @@
 		<p class="my-4">
 			<a href="/users/settings/change-2fa" class="block px-4 py-2 font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-400 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">Change 2FA secret</a>
 		</p>
+		<% if (role) { %>
+			<% if (role.name === 'buyer') { %>
+			<p class="my-4">
+				<a href="/buyer/apply-for-vendor" class="block px-4 py-2 font-semibold bg-indigo-600 text-white rounded-md hover:bg-indigo-400 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">Apply for Vendor</a>
+			</p>
+			<% } %>
+		<% } %>
 		<p class="my-4">
 			<a href="/users/settings/delete-account" class="block px-4 py-2 font-semibold bg-red-600 text-white rounded-md hover:bg-red-500 focus:outline-none focus:shadow-outline-red active:bg-red-800">Delete account</a>
 		</p>
 	</div>
-		</p>
 	</div>
 	<%- include('../../partials/footer'); %>

@@ -14,6 +14,7 @@ const sequelize = require("./config/connection")
 // Import routes
 const usersRouter = require("./routes/users");
 const adminRouter = require("./routes/admin");
+const buyerRouter = require("./routes/buyer");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -52,6 +53,7 @@ app.use(bodyParser.json());
 
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
+app.use("/buyer", buyerRouter);
 
 app.use(express.static("public"));
 
