@@ -31,6 +31,9 @@ module.exports = {
       mnemonic: {
         type: Sequelize.STRING,
       },
+      pgp_key: {
+        type: Sequelize.TEXT,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

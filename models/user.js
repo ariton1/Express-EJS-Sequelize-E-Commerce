@@ -24,6 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     twofactor_secret: DataTypes.STRING,
     phrase: DataTypes.STRING,
     mnemonic: DataTypes.STRING,
+    pgp_key: DataTypes.TEXT,
     mnemonic_shown: {
       type: DataTypes.BOOLEAN,
       defaultValue: false
