@@ -454,7 +454,7 @@ router.get("/settings/change-2fa", isLoggedIn, require2FA, async (req, res) => {
 	
 		//Fetch the user's role
 		const role = await Role.findOne({ where: { id: user.roleId } });
-		
+
 	// Render the change 2FA form
 	res.render("users/settings/change-2fa", { 
 		user: user,
@@ -512,8 +512,23 @@ router.post(
 	}
 );
 
-router.get("/settings/delete-account", isLoggedIn, require2FA, (req, res) => {
-	res.render("users/settings/delete-account", { flash: req.flash() });
+router.get("/settings/delete-account", isLoggedIn, require2FA, async (req, res) => {
+	// Get and Verify the JWT
+	const token = req.cookies.token;
+	const decoded = jwt.verify(token, process.env.JWT_SECRET);
+	const userId = decoded.id;
+
+	// Fetch the user's profile data from the database using their id
+	const user = await User.findOne({ where: { id: userId } });
+
+	//Fetch the user's role
+	const role = await Role.findOne({ where: { id: user.roleId } });
+
+	res.render("users/settings/delete-account", {
+		user: user,
+		role: role,
+		flash: req.flash()
+	 });
 });
 
 router.post(
