@@ -38,35 +38,37 @@ router.post("/add-pgp-key", isLoggedIn, require2FA, async (req, res) => {
     const pgpKey = req.body.pgp_key;
         try {
             const key = await openpgp.readKey({ armoredKey: pgpKey});
-            const keyIsValid = key.keys && key.keys.length > 0;
+            const keyIsValid = key.keyPacket.version > 0;
+            console.log(keyIsValid);
             if (!keyIsValid) {
                 req.flash("Invalid PGP key format.");
                 res.redirect("/pgp/add-pgp-key");
                 return;
+          } else {
+            // Check if the key already exists in another user
+            const existingUser = await User.findOne({ where: { pgp_key: pgpKey } });
+            if (existingUser) {
+                req.flash("error", "This PGP key is already in use by another user. Please use a different key.");
+                res.redirect("/pgp/add-pgp-key");
+                } else {
+                    // Get and Verify the JWT
+                    const token = req.cookies.token;
+                    console.log(token);
+                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                    const userId = decoded.id;
+
+                    // Fetch the user's profile data from the database using their id
+                    const user = await User.findOne({ where: { id: userId } });
+                    user.pgp_key = pgpKey;
+                    await user.save();
+                    req.flash("success", "PGP key added successfully. Please verify it.");
+                    res.redirect("/pgp/add-pgp-key");
+                }
           }
         } catch (error) {
             req.flash("error", "Invalid PGP key format. Please try again.");
             res.redirect("/pgp/add-pgp-key");
             return;
-        }
-
-        // Check if the key already exists in another user
-        const existingUser = await User.findOne({ where: { pgp_key: pgpKey } });
-        console.log('testtestetetsetsetestsetsets');
-        if (existingUser) {
-            req.flash("error", "This PGP key is already in use by another user. Please use a different key.");
-            res.redirect("/pgp/add-pgp-key");
-        } else {
-            // Get and Verify the JWT
-            const token = req.cookies.token;
-            console.log(token);
-            const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            const userId = decoded.id;
-    
-            // Fetch the user's profile data from the database using their id
-            const user = await User.findOne({ where: { id: userId } });
-            user.pgp_key = pgpKey;
-            await user.save();
         }
 });
 
