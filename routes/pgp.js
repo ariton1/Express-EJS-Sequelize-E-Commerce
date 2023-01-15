@@ -72,4 +72,29 @@ router.post("/add-pgp-key", isLoggedIn, require2FA, async (req, res) => {
         }
 });
 
+router.post("/delete-pgp-key", isLoggedIn, async (req, res) => {
+    try {
+      // Get and Verify the JWT
+      const token = req.cookies.token;
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const userId = decoded.id;
+  
+      // Fetch the user's profile data from the database using their id
+      const user = await User.findOne({ where: { id: userId } });
+  
+      // Delete the PGP key and set pgp_verified to false
+      user.pgp_key = null;
+      user.pgp_verified = false;
+      await user.save();
+  
+      req.flash("success", "PGP key deleted successfully. You can now add a new one.");
+      res.redirect("/pgp/add-pgp-key");
+    } catch (error) {
+      req.flash("error", "Error deleting PGP key. Please try again.");
+      res.redirect("/pgp/add-pgp-key");
+      return;
+    }
+  });
+  
+
 module.exports = router;
