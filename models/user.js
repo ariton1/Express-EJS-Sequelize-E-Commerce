@@ -25,6 +25,10 @@ module.exports = (sequelize, DataTypes) => {
     phrase: DataTypes.STRING,
     mnemonic: DataTypes.STRING,
     pgp_key: DataTypes.TEXT,
+    pgp_verified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false
+    },
     mnemonic_shown: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

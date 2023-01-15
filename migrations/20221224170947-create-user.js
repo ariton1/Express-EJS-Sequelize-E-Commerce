@@ -1,4 +1,7 @@
 'use strict';
+
+const { BOOLEAN } = require('sequelize');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -19,7 +22,7 @@ module.exports = {
         allowNull: false,
       },
       twofactor_enabled: {
-        type:Sequelize.BOOLEAN,
+        type: Sequelize.BOOLEAN,
         default: false,
       },
       twofactor_secret: {
@@ -33,6 +36,11 @@ module.exports = {
       },
       pgp_key: {
         type: Sequelize.TEXT,
+        unique: true,
+      },
+      pgp_verified: {
+        type: Sequelize.BOOLEAN,
+        default: false,
       },
       createdAt: {
         allowNull: false,

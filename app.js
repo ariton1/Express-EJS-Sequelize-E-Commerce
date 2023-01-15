@@ -15,6 +15,7 @@ const sequelize = require("./config/connection")
 const usersRouter = require("./routes/users");
 const adminRouter = require("./routes/admin");
 const buyerRouter = require("./routes/buyer");
+const pgpRouter = require ("./routes/pgp");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -24,7 +25,6 @@ const require2FA = require("./middleware/require2FA");
 const db = require("./models");
 const User = db.User;
 const Role = db.Role;
-
 
 app.use(flash());
 app.use(cookieParser());
@@ -54,6 +54,7 @@ app.use(bodyParser.json());
 app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
 app.use("/buyer", buyerRouter);
+app.use("/pgp", pgpRouter);
 
 app.use(express.static("public"));
 
