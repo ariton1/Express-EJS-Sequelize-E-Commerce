@@ -11,25 +11,25 @@ const require2FA = require("../middleware/require2FA");
 const db = require("../models");
 const User = db.User;
 const Role = db.Role;
+const PGPKey = db.PGPKey;
 
 // GET request to display the form to add PGP key
 router.get("/add-pgp-key", isLoggedIn, require2FA, async (req, res) => {
-    		// Get and Verify the JWT
-		const token = req.cookies.token;
-		const decoded = jwt.verify(token, process.env.JWT_SECRET);
-		const userId = decoded.id;
-	
-		// Fetch the user's profile data from the database using their id
-		const user = await User.findOne({ where: { id: userId } });
-	
-		//Fetch the user's role
-		const role = await Role.findOne({ where: { id: user.roleId } });
+    // Get and Verify the JWT
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
 
-        res.render("users/settings/add-pgp-key", {
-            user: user,
-            role: role,
-            flash: req.flash(),
-        });
+    const user = await User.findOne({ where: { id: userId }});
+
+    //Fetch the user's role
+    const role = await Role.findOne({ where: { id: user.roleId } });
+
+    res.render("users/settings/add-pgp-key", {
+        user: user,
+        role: role,
+        flash: req.flash(),
+    });
 });
 
 // POST request to handle form submission to add PGP key
@@ -39,40 +39,51 @@ router.post("/add-pgp-key", isLoggedIn, require2FA, async (req, res) => {
         try {
             const key = await openpgp.readKey({ armoredKey: pgpKey});
             const keyIsValid = key.keyPacket.version > 0;
-            console.log(keyIsValid);
+
             if (!keyIsValid) {
                 req.flash("Invalid PGP key format.");
                 res.redirect("/pgp/add-pgp-key");
                 return;
           } else {
-            // Check if the key already exists in another user
-            const existingUser = await User.findOne({ where: { pgp_key: pgpKey } });
-            if (existingUser) {
+            // Check if the key already exists 
+            const existingKey = await PGPKey.findOne({ where: { key: pgpKey } });
+
+            if (existingKey) {
                 req.flash("error", "This PGP key is already in use by another user. Please use a different key.");
                 res.redirect("/pgp/add-pgp-key");
-                } else {
-                    // Get and Verify the JWT
-                    const token = req.cookies.token;
-                    console.log(token);
-                    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-                    const userId = decoded.id;
+            } else {
+                // Get and Verify the JWT
+                const token = req.cookies.token;
+                const decoded = jwt.verify(token, process.env.JWT_SECRET);
+                const userId = decoded.id;
 
-                    // Fetch the user's profile data from the database using their id
-                    const user = await User.findOne({ where: { id: userId } });
-                    user.pgp_key = pgpKey;
-                    await user.save();
-                    req.flash("success", "PGP key added successfully. Please verify it.");
-                    res.redirect("/pgp/add-pgp-key");
-                }
+                // Find the user
+                const user = await User.findByPk(userId);
+
+
+                // Generate an UUID for the newly created user
+                const uuid = require("uuid");
+                const pgpKeyId = uuid.v4();
+
+                // Create a new pgp key and associate it with the user
+                const newPGPKey = await PGPKey.create({ id: pgpKeyId, key: pgpKey });
+
+                // Associate the PGPKey with the user
+                await user.setPGPKey(newPGPKey);
+                
+                req.flash("success", "PGP key added successfully.");
+                res.redirect("/pgp/add-pgp-key");
+          }
           }
         } catch (error) {
+            console.log(error);
             req.flash("error", "Invalid PGP key format. Please try again.");
             res.redirect("/pgp/add-pgp-key");
             return;
         }
 });
 
-router.post("/delete-pgp-key", isLoggedIn, async (req, res) => {
+router.post("/delete-pgp-key", isLoggedIn, require2FA, async (req, res) => {
     try {
       // Get and Verify the JWT
       const token = req.cookies.token;
@@ -80,12 +91,10 @@ router.post("/delete-pgp-key", isLoggedIn, async (req, res) => {
       const userId = decoded.id;
   
       // Fetch the user's profile data from the database using their id
-      const user = await User.findOne({ where: { id: userId } });
+      const user = await User.findOne({ where: { id: userId }});
   
-      // Delete the PGP key and set pgp_verified to false
-      user.pgp_key = null;
-      user.pgp_verified = false;
-      await user.save();
+      // Delete the PGP key
+      
   
       req.flash("success", "PGP key deleted successfully. You can now add a new one.");
       res.redirect("/pgp/add-pgp-key");
@@ -95,6 +104,5 @@ router.post("/delete-pgp-key", isLoggedIn, async (req, res) => {
       return;
     }
   });
-  
 
 module.exports = router;

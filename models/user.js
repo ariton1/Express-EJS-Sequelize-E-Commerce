@@ -9,12 +9,17 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {
-      // define association here
+    static associate(models) {    
       User.belongsTo(models.Role, {
         foreignKey: 'roleId',
         as: 'role',
       })
+
+      User.hasOne(models.PGPKey, {
+        foreignKey: 'user_id',
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE'
+      });
     }
   }
   User.init({
@@ -24,11 +29,6 @@ module.exports = (sequelize, DataTypes) => {
     twofactor_secret: DataTypes.STRING,
     phrase: DataTypes.STRING,
     mnemonic: DataTypes.STRING,
-    pgp_key: DataTypes.TEXT,
-    pgp_verified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
-    },
     mnemonic_shown: {
       type: DataTypes.BOOLEAN,
       defaultValue: false

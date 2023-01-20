@@ -3,24 +3,25 @@ const {
   Model
 } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
-  class Role extends Model {
+  class PGPKey extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      Role.hasMany(models.User, {
-        foreignKey: 'roleId',
-        as: 'users',
-      })
+      PGPKey.belongsTo(models.User, {
+        foreignKey: 'user_id',
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE'
+      });
     }
   }
-  Role.init({
-    name: DataTypes.STRING
+  PGPKey.init({
+    key: DataTypes.TEXT,
   }, {
     sequelize,
-    modelName: 'Role',
+    modelName: 'PGPKey',
   });
-  return Role;
+  return PGPKey;
 };

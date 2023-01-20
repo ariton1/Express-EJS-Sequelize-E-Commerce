@@ -9,7 +9,7 @@ function require2FA(req, res, next) {
 	User.findOne({ where: { id: decoded.id } })
 		.then((user) => {
 			// If the user has already set up 2FA, redirect them to the home page
-			if (user.twofactor_enabled) {
+			if (user && user.twofactor_enabled) {
 				return next();
 			}
 			return res.redirect("/users/set-2fa");

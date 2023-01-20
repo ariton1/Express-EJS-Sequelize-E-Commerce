@@ -2,6 +2,13 @@
 <%- include('../../partials/header'); %>
 <%- include ('../../partials/navbar'); %>
 	<div class="rounded-md p-8 bg-white shadow-md">
+		<% if (flash.error) { %>
+			<div class="bg-red-500 p-4 mb-4">
+				<% flash.error.forEach((msg) => { %>
+				<p><%= msg %></p>
+				<% }); %>
+			</div>
+			<% } %>
 		<% if (flash.success) { %>
 			<p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
 				<%= flash.success %>

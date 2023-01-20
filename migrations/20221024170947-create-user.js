@@ -1,7 +1,5 @@
 'use strict';
 
-const { BOOLEAN } = require('sequelize');
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -34,14 +32,6 @@ module.exports = {
       mnemonic: {
         type: Sequelize.STRING,
       },
-      pgp_key: {
-        type: Sequelize.TEXT,
-        unique: true,
-      },
-      pgp_verified: {
-        type: Sequelize.BOOLEAN,
-        default: false,
-      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
@@ -49,9 +39,10 @@ module.exports = {
       updatedAt: {
         allowNull: false,
         type: Sequelize.DATE,
-      }
+      },
     });
   },
+
   async down(queryInterface, Sequelize) {
     await queryInterface.dropTable('Users');
   }
