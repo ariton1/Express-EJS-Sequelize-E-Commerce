@@ -20,12 +20,13 @@ router.get("/add-pgp-key", isLoggedIn, require2FA, async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id;
 
-    const user = await User.findOne({
-      where: { id: userId },
-      include: [{
-          model: PGPKey
-      }]
-  });
+    const user = await User.findByPk(
+      userId, {
+        include: [{
+            model: PGPKey
+        }]
+      }
+  );
 
     //Fetch the user's role
     const role = await Role.findOne({ where: { id: user.roleId } });
@@ -97,10 +98,10 @@ router.post("/delete-pgp-key", isLoggedIn, require2FA, async (req, res) => {
   
       // Fetch the user's profile data from the database using their id
       const user = await User.findOne({ where: { id: userId }});
+      const pgpKey = await PGPKey.findOne({ where: { user_id: userId } });
   
       // Delete the PGP key
-      await user.setPgpKey(null);
-      
+      await pgpKey.destroy();
   
       req.flash("success", "PGP key deleted successfully. You can now add a new one.");
       res.redirect("/pgp/add-pgp-key");

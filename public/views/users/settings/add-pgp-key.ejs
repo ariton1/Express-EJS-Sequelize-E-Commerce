@@ -20,11 +20,12 @@
       <form method="post" action="/pgp/add-pgp-key">
         <div class="mb-4">
           <label class="block font-medium text-gray-700 mb-2">Public PGP Key</label>
-          <textarea name="pgp_key" rows="10" class="border rounded p-2 w-full" <% if (user.PGPKey) { %> readonly <% } %>><%= user.PGPKey.key %></textarea>
-        </div>
-        <% if (!user.PGPKey) { %>
-        <input type="submit" value="Add PGP Key" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800">
-        <% } %> 
+          <% if (user.PGPKey) { %>
+            <textarea name="pgp_key" rows="10" class="border rounded p-2 w-full" readonly><%= user.PGPKey.key %></textarea>
+          <% } else { %>
+            <textarea name="pgp_key" rows="10" class="border rounded p-2 w-full"></textarea>
+            <input type="submit" value="Add PGP Key" class="bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-indigo active:bg-indigo-800 mt-5">
+            <% } %>
       </form>
       <% if (user.PGPKey) { %>
         <form method="post" action="/pgp/delete-pgp-key" class="mt-5">
