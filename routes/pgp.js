@@ -66,7 +66,6 @@ router.post("/add-pgp-key", isLoggedIn, require2FA, async (req, res) => {
                 // Find the user
                 const user = await User.findByPk(userId);
 
-
                 // Generate an UUID for the newly created user
                 const uuid = require("uuid");
                 const pgpKeyId = uuid.v4();

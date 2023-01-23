@@ -1,1 +1,80 @@
-<p>APPLY FOR VENDOR</p>
+<% title = "Apply for Vendor" %>
+<%- include('../partials/header'); %>
+<%- include ('../partials/navbar'); %>
+
+<div class="bg-white rounded-md p-8 shadow-md mt-10">
+    <h1 class="text-2xl font-bold text-center mb-4">Apply for Vendor</h1>
+    <form action="/buyer/apply-for-vendor" method="post">
+        <div class="mb-4">
+            <% if (flash.success) { %>
+                <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+                    <%= flash.success %>
+                <p/>
+                <% } %>
+            
+                <% if (flash.error) { %>
+                    <p class="text-center font-semibold text-red-500 rounded-md bg-red-100 p-4">
+                        <% flash.error.forEach((error) => { %>
+                            <%= error %><br>
+                        <% }); %>
+                    </p>
+                <% } %>
+            <label class="block text-gray-700 font-medium mb-2" for="reason">
+                Why do you want to become a vendor at this market?
+            </label>
+            <textarea 
+                class="bg-gray-200 rounded-md p-2 w-full" 
+                id="reason" 
+                name="reason"
+                required
+            ></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2" for="products">
+                What products do you plan on selling?
+            </label>
+            <textarea 
+                class="bg-gray-200 rounded-md p-2 w-full" 
+                id="products" 
+                name="products"
+                required
+            ></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2" for="countries">
+                What countries will you ship to?
+            </label>
+            <textarea 
+                class="bg-gray-200 rounded-md p-2 w-full" 
+                id="countries" 
+                name="countries"
+                required
+            ></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2" for="other_markets">
+                Do you vend on other markets? If yes, why do you want to vend here as well?
+            </label>
+            <textarea 
+                class="bg-gray-200 rounded-md p-2 w-full" 
+                id="other_markets" 
+                name="other_markets"
+                required
+            ></textarea>
+        </div>
+        <div class="mb-4">
+            <label class="block text-gray-700 font-medium mb-2" for="links">
+                Post any links of your profile on other markets (if any).
+            </label>
+            <textarea 
+                class="bg-gray-200 rounded-md p-2 w-full" 
+                id="links" 
+                name="links"
+            ></textarea>
+        </div>
+        <div class="text-center">
+            <button class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-500">Submit</button>
+        </div>
+    </form>
+</div>
+<%- include('../partials/footer'); %>

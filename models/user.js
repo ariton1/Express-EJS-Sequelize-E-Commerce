@@ -20,6 +20,12 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: 'SET NULL',
         onUpdate: 'CASCADE'
       });
+
+      User.hasOne(models.VendorApplication, {
+        foreignKey: 'user_id',
+        onDelete: 'SET NULL',
+        onUpdate: 'CASCADE'
+      })
     }
   }
   User.init({
