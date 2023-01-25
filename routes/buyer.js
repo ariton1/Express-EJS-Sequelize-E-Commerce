@@ -11,7 +11,6 @@ const hasPGPKey = require("../middleware/hasPGPKey");
 
 // Import the database models
 const db = require("../models");
-const vendorapplication = require("../models/vendorapplication");
 const User = db.User;
 const VendorApplication = db.VendorApplication;
 const Role = db.Role;
@@ -21,6 +20,16 @@ router.get("/apply-for-vendor", isLoggedIn, require2FA, isBuyer, hasPGPKey, asyn
 	const token = req.cookies.token;
 	const decoded = jwt.verify(token, process.env.JWT_SECRET);
 	const userId = decoded.id;
+
+    // check if the user already has an application
+    const application = await VendorApplication.findOne({ where: { user_id: userId } });
+    if (application) {
+        if (application.status === 'pending') {
+            req.flash("error", "You have already submitted an application.");
+            return res.redirect("/users/settings");
+        }
+    }
+
 
     // Fetch the user's profile data from the database using their id
     const user = await User.findOne({ where: { id: userId } });
@@ -44,7 +53,7 @@ router.post("/apply-for-vendor", isLoggedIn, require2FA, isBuyer, hasPGPKey, [
     check('products', 'The products should answer contain letters').matches(/^(?=.*[A-Za-z]).+$/),
     check('countries', 'The countries should answer contain letters').matches(/^(?=.*[A-Za-z]).+$/),
     check('other_markets', 'The other markets answer should contain letters').matches(/^(?=.*[A-Za-z]).+$/)
-], (req, res) => {
+], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         req.flash("error", errors.array().map((error) => error.msg));
@@ -54,6 +63,13 @@ router.post("/apply-for-vendor", isLoggedIn, require2FA, isBuyer, hasPGPKey, [
 		const token = req.cookies.token;
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 		const userId = decoded.id;
+
+        // check if the user already has an application
+        const application = await VendorApplication.findOne({ where: { user_id: userId } });
+        if (application) {
+            req.flash("error", "You have already submitted an application.");
+            return res.redirect("/buyer/apply-for-vendor");
+        }
 
         // Generate an UUID for the newly created user
         const uuid = require("uuid");
