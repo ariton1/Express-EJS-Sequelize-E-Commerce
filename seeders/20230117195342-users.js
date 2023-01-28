@@ -17,6 +17,19 @@ module.exports = {
         roleId: 4,
         mnemonic_shown: true
       },
+      {
+        id: 'c298e965-dd6e-4476-a873-74c87ee29ce7',
+        username: 'erit1',
+        password: '$2a$10$DY3Z2xQs.IW7Gd.rzwM0aOLWexKH1j.KuS8nmudPan8Y0plHyB2uK',
+        twofactor_enabled: true,
+        twofactor_secret: 'U2FsdGVkX18bIHL60GLMfZsHPAoiFXHI0HsLSOJddjH053EJw5YLNXZB7iRNHAp9hG6EvIOSf5UV6CfsvNMbWQ==',
+        phrase: 'fdsfdf',
+        mnemonic: 'U2FsdGVkX18h/3YNvIlTDhklZU5kHxp5Dxc+GlkNXe48cX6putrY+aZR558s3twXZkEwgsJNkYuYMXakh4Hrg/w5f7uIW5BdC2S+HaeWnc2a05LoL/RdiUKHx1BUPwtRj7FQlNdEq+BeE/5ux569WWa7Wr7f004glP1RoFtau5qjXP/wz9ErspfNnZv509pa2mtKZkv0iK1SsXqeJtPJHg==',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        roleId: 1,
+        mnemonic_shown: true
+      },
     ]
 
     await queryInterface.bulkInsert('Users', users);

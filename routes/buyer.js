@@ -22,24 +22,36 @@ router.get("/apply-for-vendor", isLoggedIn, require2FA, isBuyer, hasPGPKey, asyn
 	const userId = decoded.id;
 
     // check if the user already has an application
-    const application = await VendorApplication.findOne({ where: { user_id: userId } });
+    const application = await VendorApplication.findOne({ where: { user_id: userId, status: 'pending' } });
     if (application) {
         if (application.status === 'pending') {
-            req.flash("error", "You have already submitted an application.");
+            req.flash("error", "You have already submitted an application for review.");
             return res.redirect("/users/settings");
         }
     }
 
-
+    // check if the user has reached the maximum number of applications
+    const applicationCount = await VendorApplication.count({ where: { user_id: userId } });
+    if (applicationCount >= 3) {
+        req.flash("error", "You have reached the maximum number of applications allowed.");
+        return res.redirect("/users/settings");
+    }
     // Fetch the user's profile data from the database using their id
     const user = await User.findOne({ where: { id: userId } });
 
-    //Fetch the user's role
+    // Fetch the user's role
     const role = await Role.findOne({ where: { id: user.roleId } });
+
+    // Fetch all applications made by user
+    const applications = await VendorApplication.findAll({ where: { user_id: userId } });
+
+
     res.render("buyer/apply-for-vendor", {
         user: user,
 		role: role,
+        application: application,
 		flash: req.flash(),
+        applications
     });
 });
 
@@ -65,12 +77,18 @@ router.post("/apply-for-vendor", isLoggedIn, require2FA, isBuyer, hasPGPKey, [
 		const userId = decoded.id;
 
         // check if the user already has an application
-        const application = await VendorApplication.findOne({ where: { user_id: userId } });
+        const application = await VendorApplication.findOne({ where: { user_id: userId, status: 'pending' } });
         if (application) {
-            req.flash("error", "You have already submitted an application.");
+            req.flash("error", "You have already submitted an application for review.");
             return res.redirect("/buyer/apply-for-vendor");
         }
 
+        // check if the user has reached the maximum number of applications
+        const applicationCount = await VendorApplication.count({ where: { user_id: userId } });
+        if (applicationCount >= 3) {
+            req.flash("error", "You have reached the maximum number of applications allowed.");
+            return res.redirect("/users/settings");
+        }
         // Generate an UUID for the newly created user
         const uuid = require("uuid");
         const vendor_application_id = uuid.v4();
@@ -86,9 +104,8 @@ router.post("/apply-for-vendor", isLoggedIn, require2FA, isBuyer, hasPGPKey, [
             status: "pending"
         }).then(() => {
             req.flash("success", "Your application has been submitted successfully!");
-            res.redirect("/buyer/apply-for-vendor");
+            return res.redirect("/users/settings");
         })
-
     }
 })
 

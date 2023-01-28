@@ -25,7 +25,7 @@ module.exports = (sequelize, DataTypes) => {
     other_markets: DataTypes.STRING,
     links: DataTypes.STRING,
     status: DataTypes.STRING,
-    rejectionReason: DataTypes.STRING
+    rejection_reason: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'VendorApplication',

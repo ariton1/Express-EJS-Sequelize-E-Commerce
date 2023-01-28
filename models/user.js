@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         onUpdate: 'CASCADE'
       });
 
-      User.hasOne(models.VendorApplication, {
+      User.hasMany (models.VendorApplication, {
         foreignKey: 'user_id',
         onDelete: 'SET NULL',
         onUpdate: 'CASCADE'

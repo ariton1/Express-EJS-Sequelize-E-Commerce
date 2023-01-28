@@ -34,12 +34,11 @@ module.exports = {
         values: ['pending', 'approved', 'rejected'],
         defaultValue: 'pending'
       },
-      rejectionReason: {
+      rejection_reason: {
         type: Sequelize.STRING
       },
       user_id: {
         type: Sequelize.UUID,
-        unique: true,
         references: {
           model: 'Users',
           key: 'id'

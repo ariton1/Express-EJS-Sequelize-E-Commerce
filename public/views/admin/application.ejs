@@ -1,0 +1,57 @@
+<% title = "Pending Vendor Applications" %>
+<%- include('../partials/header'); %>
+
+<div class="mx-auto">
+    <%- include ('../partials/sidebar'); %>
+    <h1 class="text-2xl font-bold mb-2">Application</h1>
+
+    <div class="bg-white rounded-lg p-4">
+        <div class="mb-4">
+            <% if (flash.error) { %>
+                <div class="bg-red-500 p-4 mb-4">
+                    <% flash.error.forEach((msg) => { %>
+                    <p><%= msg %></p>
+                    <% }); %>
+                </div>
+                <% } %>
+            <% if (flash.success) { %>
+                <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+                    <%= flash.success %>
+                </p>
+            <% } %>
+            <h5 class="text-lg font-medium">User ID: <%= application.User.id %></h5>
+            <h5 class="text-lg font-medium">Username: <%= application.User.username %></h5>
+        </div>
+        <div class="mb-4">
+            <p class="text-base">Reason for applying: <%= application.reason %></p>
+            <p class="text-base">Products for sale: <%= application.products %></p>
+            <p class="text-base">Shipping Countries: <%= application.countries %></p>
+            <p class="text-base">Do you vend on other markets: <%= application.other_markets %></p>
+            <p class="text-base">Other market profile links: <%= application.links %></p>
+            <p class="text-base">Status: <%= application.status %></p>
+            <% if(application.status === 'rejected') { %>
+                <p class="text-red-500">Rejection Reason: <%= application.rejection_reason %></p>
+            <% } %>
+        </div>
+<div class="flex justify-between">
+            <% if(application.status === 'pending') { %>
+                <div class="">
+                    <form action="/admin/application/<%= application.id %>/approve" method="post">
+                        <input type="hidden" name="applicationId" value="<%= application.id %>">
+                        <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg">Approve</button>
+                    </form>
+                    <form action="/admin/application/<%= application.id %>/reject" method="post">
+                        <input type="hidden" name="applicationId" value="<%= application.id %>">
+                        <div class="form-group">
+                            <label for="rejection_reason" class="text-gray-700">Rejection Reason</label>
+                            <input type="text" class="form-control border rounded-lg p-2" id="rejection_reason" name="rejection_reason">
+                        </div>
+                        <button type="submit" class="bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg">Reject</button>
+                    </form>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    </div>
+</body>
+</html>
