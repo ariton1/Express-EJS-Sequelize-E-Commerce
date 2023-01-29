@@ -68,10 +68,10 @@ router.post(
 		if (!user.twofactor_enabled) {
 			// Generate a JWT and set it in a cookie
 			const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-				expiresIn: 864000, // expires in 24 hours
+				expiresIn: "24h",
 			});
 			res.cookie("token", token, {
-				expires: new Date(Date.now() + 864000), // Expires in 24 hours
+				expires: new Date(Date.now() + 86400000),
 				httpOnly: true, // Only accessible by the server
 			});
 
@@ -103,12 +103,12 @@ router.post(
 
 		// If the username, password, and 2FA code are correct (if applicable), generate a JWT and send it back to the client
 		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-			expiresIn: 864000, // expires in 24 hours
+			expiresIn: "24h",
 		});
 
 		// Set the token in a cookie with an expiration date
 		res.cookie("token", token, {
-			expires: new Date(Date.now() + 864000), // Expires in 24 hours
+			expires: new Date(Date.now() + 86400000),
 			httpOnly: true, // Only accessible by the server
 		});
 
@@ -206,12 +206,12 @@ router.post(
 				const token = jwt.sign(
 					{ id: user.id },
 					process.env.JWT_SECRET,
-					{ expiresIn: 864000 }
-				); // expires in 24 hours
+					{ expiresIn: "24h" }
+				);
 
 				// Set the token in a cookie with an expiration date
 				res.cookie("token", token, {
-					expires: new Date(Date.now() + 864000), // Expires in 24 hours
+					expires: new Date(Date.now() + 86400000),
 					httpOnly: true, // Only accessible by the server
 				});
 

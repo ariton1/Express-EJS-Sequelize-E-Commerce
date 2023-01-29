@@ -5,7 +5,6 @@ require("dotenv").config();
 
 const bodyParser = require("body-parser");
 const flash = require("connect-flash");
-const session = require("express-session");
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
@@ -34,16 +33,7 @@ app.use(
 	cookieSession({
 		name: "sessId",
 		secret: process.env.COOKIE_SECRET,
-		maxAge: 86400000, // expiration time in milliseconds (1 day)
-	})
-);
-
-// Enable sessions
-app.use(
-	session({
-		secret: process.env.SESSION_SECRET,
-		resave: false,
-		saveUninitialized: true,
+		maxAge: 864000, // expiration time in milliseconds (1 day)
 	})
 );
 
