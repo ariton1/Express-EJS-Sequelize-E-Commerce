@@ -39,6 +39,16 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.BOOLEAN,
       defaultValue: false
     },
+    is_banned: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    banned_reason: {
+      type: DataTypes.STRING,
+    },
+    banned_until: {
+      type: DataTypes.DATE,
+    },
   }, {
     sequelize,
     modelName: 'User',

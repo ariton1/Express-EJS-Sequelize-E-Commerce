@@ -100,7 +100,7 @@ router.post(
 			req.flash("error", "Invalid 2FA code");
 			return res.redirect("/users/login");
 		}
-
+		
 		// If the username, password, and 2FA code are correct (if applicable), generate a JWT and send it back to the client
 		const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
 			expiresIn: "24h",
@@ -123,6 +123,79 @@ router.get("/logout", (req, res) => {
 	// Redirect the user back to the login page
 	res.redirect("/users/login");
 });
+
+router.get("/reset-password", (req, res) => {
+	const token = req.cookies.token;
+	if (token) {
+		return res.redirect("/");
+	}
+	res.render("users/reset-password", { flash: req.flash(), role: null });
+});
+
+router.post("/reset-password", [
+	check("username", "Username cannot be empty").not().isEmpty(),
+	check("password", "Password cannot be empty").not().isEmpty(),
+	check(
+		"password",
+		"Password must have at least 8 characters and contain at least 1 uppercase character, 1 lowercase character, 1 number, and 1 symbol"
+	)
+		.isLength({ min: 8, max: 32 })
+		.matches(
+			/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/,
+			"i"
+		),
+	check("confirmPassword", "Passwords do not match").custom(
+		(value, { req }) => value === req.body.password
+	),
+  ], async (req, res) => {
+	// Check for validation errors
+	const errors = validationResult(req);
+	if (!errors.isEmpty()) {
+		// Set flash messages and redirect the user back to the register page
+		req.flash(
+			"error",
+			errors.array().map((error) => error.msg)
+		);
+		return res.redirect("/users/reset-password");
+	}
+
+	// Check if the user exists
+	const user = await User.findOne({
+		where: { username: req.body.username.toLowerCase() },
+	});
+	
+	if (!user) {
+		req.flash("error", "User not found");
+		return res.redirect("/users/reset-password");
+	}
+	
+	// Get the mnemonic key from the .env file
+	const mnemonicKey = process.env.MNEMONIC_KEY;
+
+	// Decrypt the mnemonic
+	const decrypted = CryptoJS.AES.decrypt(user.mnemonic, mnemonicKey);
+	const originalMnemonic = decrypted.toString(CryptoJS.enc.Utf8);
+
+	// Check if the mnemonic is correct
+	if (originalMnemonic !== req.body.mnemonic) {
+		req.flash("error", "Mnemonic is incorrect");
+		return res.redirect("/users/reset-password");
+	}
+	
+	// Hash the new password
+	const hashedPassword = bcrypt.hashSync(req.body.password, 10);
+	
+	// Update the user's password
+	User.update({ password: hashedPassword }, { where: { id: user.id } })
+	.then(() => {
+		req.flash("success", "Password reset successfully");
+		res.redirect("/users/login");
+	})
+	.catch((error) => {
+		res.status(500).send({ error: error });
+	});
+	});
+  
 
 router.get("/register", (req, res) => {
 	const token = req.cookies.token;
@@ -395,11 +468,11 @@ router.post(
 		)
 			.isLength({ min: 8, max: 32 })
 			.matches(
-				/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).+$/,
+				/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9]).{8,32}$/,
 				"i"
 			),
 		check("confirmPassword", "Passwords do not match").custom(
-			(value, { req }) => value === req.body.newPassword
+			(value, { req }) => value === req.body.password
 		),
 	],
 	async (req, res) => {

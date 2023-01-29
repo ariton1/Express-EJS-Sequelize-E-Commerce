@@ -32,6 +32,16 @@ module.exports = {
       mnemonic: {
         type: Sequelize.STRING,
       },
+      is_banned: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
+      },
+      banned_reason: {
+        type: Sequelize.STRING,
+      },
+      banned_until: {
+        type: Sequelize.DATE,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,
