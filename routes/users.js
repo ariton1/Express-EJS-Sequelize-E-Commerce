@@ -251,11 +251,24 @@ router.get("/mnemonic", isLoggedIn, async (req, res) => {
 	const decrypted = CryptoJS.AES.decrypt(user.mnemonic, mnemonicKey);
 	const originalMnemonic = decrypted.toString(CryptoJS.enc.Utf8);
 
-	user.mnemonic_shown = true;
-	await user.save();
-
 	res.render("users/mnemonic", { mnemonic: originalMnemonic, role: role });
 });
+
+router.post("/mnemonic", isLoggedIn, async (req, res) => {
+    // Get and Verify the JWT
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
+
+    // Fetch the user's profile data from the database using their id
+    const user = await User.findOne({ where: { id: userId } });
+
+    user.mnemonic_shown = true;
+    await user.save();
+
+    res.redirect("/users/set-2fa");
+});
+
 
 router.get("/set-2fa", isLoggedIn, async (req, res) => {
 	// Get and Verify the JWT
