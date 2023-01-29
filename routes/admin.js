@@ -71,35 +71,39 @@ router.get("/dashboard/pending-applications", isLoggedIn, require2FA, isAdmin, a
 	}
   });
 
-router.post("/pending-applications", isLoggedIn, require2FA, isAdmin, async (req, res) => {
-	// Get and Verify the JWT
-	const token = req.cookies.token;
-	const decoded = jwt.verify(token, process.env.JWT_SECRET);
-	const userId = decoded.id;
+  // GET request to display all vendor applications
+router.get("/dashboard/all-applications", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+    // Get and Verify the JWT
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.id;
 
-	// Fetch the user's profile data from the database using their id
-	const user = await User.findOne({ where: { id: userId } });
+    // Fetch the user's profile data from the database using their id
+    const user = await User.findOne({ where: { id: userId } });
 
-	//Fetch the user's role
-	const role = await Role.findOne({ where: { id: user.roleId } });
-	
-	try {
-		// Fetch all pending vendor applications from the database, sorted by newest date
-		const applications = await VendorApplication.findAll({
-		  where: { status: "pending" },
-		  order: [['createdAt', 'ASC']]
-		});
-	
-		res.render("admin/pending-applications", {
-		  applications: applications,
-		  user: user,
-		  role: role,
-		  flash: req.flash(),
-		});
-	  } catch (err) {
-		console.log(err);
-		res.status(500).send("Server Error");
-	  }
+    //Fetch the user's role
+    const role = await Role.findOne({ where: { id: user.roleId } });
+
+    try {
+        // Fetch all vendor applications from the database
+        const applications = await VendorApplication.findAll({
+            include: [{
+                model: User,
+                attributes: ['username']
+            }],
+            order: [['createdAt', 'ASC']]
+        });
+
+        res.render("admin/all-applications", {
+            applications: applications,
+            user: user,
+            role: role,
+            flash: req.flash(),
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Server Error");
+    }
 });
 
 router.get('/application/:id', isLoggedIn, require2FA, isAdmin, async (req, res) => {
@@ -196,6 +200,5 @@ router.post('/application/:id/reject', isLoggedIn, require2FA, isAdmin, [
 		res.send(err);
 	});
 });
-
 
 module.exports = router;
