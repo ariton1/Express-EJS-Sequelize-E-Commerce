@@ -15,6 +15,7 @@ const usersRouter = require("./routes/users");
 const adminRouter = require("./routes/admin");
 const buyerRouter = require("./routes/buyer");
 const pgpRouter = require("./routes/pgp");
+const bannedRouter = require("./routes/banned");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -45,6 +46,7 @@ app.use("/users", usersRouter);
 app.use("/admin", adminRouter);
 app.use("/buyer", buyerRouter);
 app.use("/pgp", pgpRouter);
+app.use("/banned", bannedRouter);
 
 app.use(express.static("public"));
 
