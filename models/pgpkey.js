@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class PGPKey extends Model {
     /**
@@ -11,17 +9,20 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       PGPKey.belongsTo(models.User, {
-        foreignKey: 'user_id',
-        onDelete: 'CASCADE',
-        onUpdate: 'CASCADE',
+        foreignKey: "user_id",
+        onDelete: "CASCADE",
+        onUpdate: "CASCADE",
       });
     }
   }
-  PGPKey.init({
-    key: DataTypes.TEXT,
-  }, {
-    sequelize,
-    modelName: 'PGPKey',
-  });
+  PGPKey.init(
+    {
+      key: DataTypes.TEXT,
+    },
+    {
+      sequelize,
+      modelName: "PGPKey",
+    }
+  );
   return PGPKey;
 };

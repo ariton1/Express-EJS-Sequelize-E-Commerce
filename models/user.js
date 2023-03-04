@@ -1,7 +1,5 @@
-'use strict';
-const {
-  Model
-} = require('sequelize');
+"use strict";
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -9,49 +7,52 @@ module.exports = (sequelize, DataTypes) => {
      * This method is not a part of Sequelize lifecycle.
      * The `models/index` file will call this method automatically.
      */
-    static associate(models) {    
+    static associate(models) {
       User.belongsTo(models.Role, {
-        foreignKey: 'roleId',
-        as: 'role',
-      })
-
-      User.hasOne(models.PGPKey, {
-        foreignKey: 'user_id',
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
+        foreignKey: "roleId",
+        as: "role",
       });
 
-      User.hasMany (models.VendorApplication, {
-        foreignKey: 'user_id',
-        onDelete: 'SET NULL',
-        onUpdate: 'CASCADE'
-      })
+      User.hasOne(models.PGPKey, {
+        foreignKey: "user_id",
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      });
+
+      User.hasMany(models.VendorApplication, {
+        foreignKey: "user_id",
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      });
     }
   }
-  User.init({
-    username: DataTypes.STRING,
-    password: DataTypes.STRING,
-    twofactor_enabled: DataTypes.BOOLEAN,
-    twofactor_secret: DataTypes.STRING,
-    phrase: DataTypes.STRING,
-    mnemonic: DataTypes.STRING,
-    mnemonic_shown: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false
+  User.init(
+    {
+      username: DataTypes.STRING,
+      password: DataTypes.STRING,
+      twofactor_enabled: DataTypes.BOOLEAN,
+      twofactor_secret: DataTypes.STRING,
+      phrase: DataTypes.STRING,
+      mnemonic: DataTypes.STRING,
+      mnemonic_shown: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      is_banned: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false,
+      },
+      banned_reason: {
+        type: DataTypes.STRING,
+      },
+      banned_until: {
+        type: DataTypes.DATE,
+      },
     },
-    is_banned: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    banned_reason: {
-      type: DataTypes.STRING,
-    },
-    banned_until: {
-      type: DataTypes.DATE,
-    },
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+    {
+      sequelize,
+      modelName: "User",
+    }
+  );
   return User;
 };

@@ -1,60 +1,60 @@
-'use strict';
+"use strict";
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('VendorApplications', {
+    await queryInterface.createTable("VendorApplications", {
       id: {
         allowNull: false,
         primaryKey: true,
         type: Sequelize.UUID,
-        defaultValue: Sequelize.UUIDV4
+        defaultValue: Sequelize.UUIDV4,
       },
       reason: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       products: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       countries: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       other_markets: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       links: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       status: {
         type: Sequelize.ENUM,
-        values: ['pending', 'approved', 'rejected'],
-        defaultValue: 'pending'
+        values: ["pending", "approved", "rejected"],
+        defaultValue: "pending",
       },
       rejection_reason: {
-        type: Sequelize.STRING
+        type: Sequelize.STRING,
       },
       user_id: {
         type: Sequelize.UUID,
         references: {
-          model: 'Users',
-          key: 'id'
-        }
+          model: "Users",
+          key: "id",
+        },
       },
       createdAt: {
         allowNull: false,
-        type: Sequelize.DATE
+        type: Sequelize.DATE,
       },
       updatedAt: {
         allowNull: false,
-        type: Sequelize.DATE
-      }
+        type: Sequelize.DATE,
+      },
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('VendorApplications');
-  }
+    await queryInterface.dropTable("VendorApplications");
+  },
 };
