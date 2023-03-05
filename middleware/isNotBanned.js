@@ -14,9 +14,7 @@ async function isNotBanned(req, res, next) {
   }
 
   if (user.is_banned) {
-    return res.render("banned", {
-      reason: user.banned_reason,
-    });
+    return res.redirect("/banned");
   }
 
   next();

@@ -10,7 +10,14 @@ dayjs.extend(duration);
 const db = require("../models");
 const User = db.User;
 
+const isLoggedIn = require("../middleware/isLoggedIn");
+const require2FA = require("../middleware/require2FA");
+const isBanned = require("../middleware/isBanned");
+
 router.get("/"),
+  isLoggedIn,
+  require2FA,
+  isBanned,
   async (req, res) => {
     // Get and Verify the JWT
     const token = req.cookies.token;
