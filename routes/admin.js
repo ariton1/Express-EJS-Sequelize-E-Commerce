@@ -13,6 +13,7 @@ const db = require("../models");
 const User = db.User;
 const Role = db.Role;
 const VendorApplication = db.VendorApplication;
+const { Op } = require("sequelize");
 
 // Render the admin dashboard
 router.get("/dashboard", isLoggedIn, require2FA, isAdmin, async (req, res) => {
@@ -32,6 +33,72 @@ router.get("/dashboard", isLoggedIn, require2FA, isAdmin, async (req, res) => {
     role: role,
     flash: req.flash(),
   });
+});
+
+router.get("/dashboard/all-users", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  try {
+    let { search, sortBy, sortOrder } = req.query;
+    if (req.query.sort) {
+      [sortBy, sortOrder] = req.query.sort.split("|");
+    }
+    sortBy = sortBy || "createdAt";
+    sortOrder = sortOrder || "DESC";
+    // console.log(req.query.sortBy);
+    console.log(req.query.sortOrder);
+
+    let where = {}; // Default search query
+
+    // Check if a search parameter is passed in the query string
+    if (search) {
+      where = {
+        username: { [Op.like]: `%${search}%` },
+      };
+    }
+
+    let order = [["createdAt", "DESC"]]; // Default sort order
+
+    // Check if a sort parameter is passed in the query string
+    if (sortBy && sortOrder) {
+      // Determine sort order (ASC or DESC)
+      let sortOrderParam = sortOrder.toUpperCase() === "ASC" ? "ASC" : "DESC";
+
+      // Determine sort column based on the sortBy parameter
+      switch (sortBy) {
+        case "createdAt":
+          order = [["createdAt", sortOrderParam]];
+          break;
+        case "updatedAt":
+          order = [["updatedAt", sortOrderParam]];
+          break;
+        case "username":
+          order = [["username", sortOrderParam]];
+          break;
+        default:
+          order = [["createdAt", sortOrderParam]];
+          break;
+      }
+    }
+
+    console.log("orderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr: ", order);
+
+    // Fetch all users from the database with their associated role
+    const users = await User.findAll({
+      include: [{ model: Role, as: "role" }],
+      where,
+      order,
+    });
+
+    res.render("admin/all-users", {
+      title: "All Users",
+      flash: req.flash(),
+      users,
+      query: { search, sortBy, sortOrder },
+    });
+  } catch (err) {
+    console.log(err);
+    req.flash("error", "Failed to fetch users.");
+    res.redirect("/admin/dashboard/all-users");
+  }
 });
 
 // GET request to display all pending vendor applications
