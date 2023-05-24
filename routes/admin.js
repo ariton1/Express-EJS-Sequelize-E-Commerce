@@ -79,8 +79,6 @@ router.get("/dashboard/all-users", isLoggedIn, require2FA, isAdmin, async (req, 
       }
     }
 
-    console.log("orderrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr: ", order);
-
     // Fetch all users from the database with their associated role
     const users = await User.findAll({
       include: [{ model: Role, as: "role" }],
