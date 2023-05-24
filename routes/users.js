@@ -644,4 +644,34 @@ router.post(
   }
 );
 
+// User profile page route
+router.get("/user/:id", isLoggedIn, require2FA, async (req, res) => {
+  // Get and Verify the JWT
+  const token = req.cookies.token;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
+
+  // Fetch the user's profile data from the database using their id
+  const user = await User.findOne({ where: { id: userId } });
+
+  //Fetch the user's role
+  const role = await Role.findOne({ where: { id: user.roleId } });
+
+  // Fetch the user profile data from the database
+  User.findOne({ where: { id: decoded.id } })
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send("User not found");
+      }
+
+      const title = user.username;
+      // Render the user profile page
+      res.render("users/profile", { user, role: role, title });
+    })
+    .catch((error) => {
+      console.log(error);
+      res.status(500).send("Internal Server Error");
+    });
+});
+
 module.exports = router;
