@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const { check, validationResult } = require("express-validator");
+const dayjs = require("dayjs");
+const customParseFormat = require("dayjs/plugin/customParseFormat");
+dayjs.extend(customParseFormat);
 
 // Import middlewares
 const isLoggedIn = require("../middleware/isLoggedIn");
@@ -283,6 +286,80 @@ router.post(
       .catch((err) => {
         res.send(err);
       });
+  }
+);
+
+router.get("/ban/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    const role = await Role.findOne({ where: { id: user.roleId } });
+
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    if (user.is_banned) {
+      req.flash("error", "User is already banned");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    const today = new Date();
+    today.setDate(today.getDate() + 1);
+    const minDate = today.toISOString().split("T")[0];
+
+    res.render("admin/ban", { user, role: role, flash: req.flash(), minDate });
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "An error occurred");
+    res.redirect("/admin/dashboard/all-users");
+  }
+});
+
+router.post(
+  "/ban/:id",
+  isLoggedIn,
+  require2FA,
+  isAdmin,
+  [
+    check("banned_reason").notEmpty().withMessage("Banned reason is required"),
+    check("banned_until").notEmpty().withMessage("Banned until is required"),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+
+      if (!errors.isEmpty()) {
+        req.flash("error", errors.array()[0].msg);
+        return res.redirect(`/admin/ban/${req.params.id}`);
+      }
+
+      const userId = req.params.id;
+      const user = await User.findByPk(userId);
+
+      if (!user) {
+        req.flash("error", "User not found");
+        return res.redirect("/admin/dashboard/all-users");
+      }
+
+      if (user.is_banned) {
+        req.flash("error", "User is already banned");
+        return res.redirect("/admin/dashboard/all-users");
+      }
+
+      const { banned_reason, banned_until } = req.body;
+      user.is_banned = true;
+      user.banned_reason = banned_reason;
+      user.banned_until = banned_until;
+      await user.save();
+
+      req.flash("success", "User has been banned successfully");
+      res.redirect("/admin/dashboard/all-users");
+    } catch (error) {
+      console.error(error);
+      req.flash("error", "An error occurred");
+      res.redirect(`/admin/ban/${req.params.id}`);
+    }
   }
 );
 
