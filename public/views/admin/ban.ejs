@@ -33,12 +33,17 @@
               <label for="banned_until" class="block text-gray-700 text-sm font-bold mb-2">
                 Banned Until
               </label>
+              <% const today = new Date(); %>
+              <% const year = today.getFullYear(); %>
+              <% const month = String(today.getMonth() + 1).padStart(2, '0'); %>
+              <% const day = String(today.getDate() + 1).padStart(2, '0'); %>
               <input
                 type="date"
                 name="banned_until"
                 id="banned_until"
                 class="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                min="<%= minDate %>"
+                min="<%= `${year}-${month}-${day}` %>"
+                placeholder="Enter date here"
                 required
               >
             </div>

@@ -1,0 +1,31 @@
+<% title = "Unban User" %>
+<%- include('../partials/header'); %>
+
+<div class="flex flex-row w-1/2">
+  <%- include('../partials/sidebar'); %>
+  <div class="px-4 py-5">
+    <div class="py-2 inline-block min-w-full">
+      <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <% if (flash.error) { %>
+          <div class="bg-red-500 p-4 mb-4">
+            <% flash.error.forEach((msg) => { %>
+              <p><%= msg %></p>
+            <% }); %>
+          </div>
+        <% } %>
+        <div class="mb-4">
+          <h1 class="text-2xl font-bold mb-4">Unban User</h1>
+          <p class="mb-4">Are you sure you want to unban the user: <%= user.username %>?</p>
+          <form action="/admin/unban/<%= user.id %>" method="POST">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+              Unban User
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

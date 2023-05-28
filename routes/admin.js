@@ -291,7 +291,17 @@ router.post(
 
 router.get("/ban/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
   try {
-    const user = await User.findByPk(req.params.id);
+    const token = req.cookies.token;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const loggedInUserId = decoded.id;
+    const userId = req.params.id;
+
+    if (userId === loggedInUserId) {
+      req.flash("error", "You cannot ban yourself");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    const user = await User.findByPk(userId);
     const role = await Role.findOne({ where: { id: user.roleId } });
 
     if (!user) {
@@ -304,11 +314,7 @@ router.get("/ban/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
       return res.redirect("/admin/dashboard/all-users");
     }
 
-    const today = new Date();
-    today.setDate(today.getDate() + 1);
-    const minDate = today.toISOString().split("T")[0];
-
-    res.render("admin/ban", { user, role: role, flash: req.flash(), minDate });
+    res.render("admin/ban", { user, role, flash: req.flash() });
   } catch (error) {
     console.error(error);
     req.flash("error", "An error occurred");
@@ -362,5 +368,56 @@ router.post(
     }
   }
 );
+router.get("/unban/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+    const role = await Role.findOne({ where: { id: user.roleId } });
+
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    if (!user.is_banned) {
+      req.flash("error", "User is not banned");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    res.render("admin/unban", { user, role, flash: req.flash() });
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "An error occurred");
+    res.redirect("/admin/dashboard/all-users");
+  }
+});
+
+router.post("/unban/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  try {
+    const user = await User.findByPk(req.params.id);
+
+    if (!user) {
+      req.flash("error", "User not found");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    if (!user.is_banned) {
+      req.flash("error", "User is not banned");
+      return res.redirect("/admin/dashboard/all-users");
+    }
+
+    // Unban the user
+    user.banned_reason = null;
+    user.banned_until = null;
+    user.is_banned = false;
+    await user.save();
+
+    req.flash("success", "User has been unbanned");
+    res.redirect("/admin/dashboard/all-users");
+  } catch (error) {
+    console.error(error);
+    req.flash("error", "An error occurred");
+    res.redirect("/admin/dashboard/all-users");
+  }
+});
 
 module.exports = router;
