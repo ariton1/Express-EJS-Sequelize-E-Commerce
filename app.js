@@ -20,6 +20,7 @@ const bannedRouter = require("./routes/banned");
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
 const require2FA = require("./middleware/require2FA");
+const isBanned = require("./middleware/isBanned");
 
 // Import the database models
 const db = require("./models");
@@ -53,7 +54,9 @@ app.use(express.static("public"));
 app.set("view engine", "ejs");
 app.set("views", "public/views");
 
-app.get("/", isLoggedIn, require2FA, async (req, res) => {
+require("./unbanUsers"); // run the cron job periodically
+
+app.get("/", isLoggedIn, require2FA, isBanned, async (req, res) => {
   // Get and Verify the JWT
   const token = req.cookies.token;
   const decoded = jwt.verify(token, process.env.JWT_SECRET);
