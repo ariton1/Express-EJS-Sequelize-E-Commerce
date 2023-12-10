@@ -7,15 +7,14 @@ const bodyParser = require("body-parser");
 const flash = require("connect-flash");
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
 const sequelize = require("./config/connection");
 
 // Import routes
-const usersRouter = require("./routes/users");
-const adminRouter = require("./routes/admin");
-const buyerRouter = require("./routes/buyer");
-const pgpRouter = require("./routes/pgp");
-const bannedRouter = require("./routes/banned");
+const usersRouter = require("./routes/usersRouter");
+const adminRouter = require("./routes/adminRouter");
+const buyerRouter = require("./routes/buyerRouter");
+const pgpRouter = require("./routes/pgpRouter");
+const bannedRouter = require("./routes/bannedRouter");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -26,6 +25,8 @@ const isBanned = require("./middleware/isBanned");
 const db = require("./models");
 const User = db.User;
 const Role = db.Role;
+
+const getUserIdFromToken = require("./utils/getUserIdFromToken");
 
 app.use(flash());
 app.use(cookieParser());
@@ -57,15 +58,9 @@ app.set("views", "public/views");
 require("./unbanUsers"); // run the cron job periodically
 
 app.get("/", isLoggedIn, require2FA, isBanned, async (req, res) => {
-  // Get and Verify the JWT
-  const token = req.cookies.token;
-  const decoded = jwt.verify(token, process.env.JWT_SECRET);
-  const userId = decoded.id;
+  const userId = getUserIdFromToken(req);
 
-  // Fetch the user's profile data from the database using their id
   const user = await User.findOne({ where: { id: userId } });
-
-  //Fetch the user's role
   const role = await Role.findOne({ where: { id: user.roleId } });
 
   res.render("index", { role: role });
