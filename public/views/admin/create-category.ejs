@@ -1,0 +1,29 @@
+<% title = "Create Category" %>
+<%- include('../partials/header'); %>
+
+<div class="flex flex-row w-1/2">
+    <%- include('../partials/sidebar'); %>
+    <div class="px-4 py-5">
+        <div class="py-2 inline-block min-w-full">
+            <form action="/admin/categories/create" method="post">
+                <label for="name">Category Name:</label>
+                <input type="text" id="name" name="name" required>
+                <button type="submit">Create Category</button>
+            </form>
+            <% if (flash.error) { %>
+                <div class="bg-red-500 p-4 mb-4">
+                    <% flash.error.forEach((msg) => { %>
+                        <p><%= msg %></p>
+                    <% }); %>
+                </div>
+            <% } %>
+            <% if (flash.success) { %>
+                <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+                    <%= flash.success %>
+                </p>
+            <% } %>
+        </div>
+    </div>
+</div>
+</body>
+</html>

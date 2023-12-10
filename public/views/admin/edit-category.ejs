@@ -1,0 +1,38 @@
+<% title = "Edit Category" %>
+<%- include('../partials/header'); %>
+
+<div class="flex flex-row w-1/2">
+    <%- include('../partials/sidebar'); %>
+    <div class="px-4 py-5">
+        <div class="py-2 inline-block min-w-full">
+            <div class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+                <% if (flash.error) { %>
+                    <div class="bg-red-500 p-4 mb-4">
+                        <% flash.error.forEach((msg) => { %>
+                            <p><%= msg %></p>
+                        <% }); %>
+                    </div>
+                <% } %>
+                <% if (flash.success) { %>
+                    <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+                        <%= flash.success %>
+                    </p>
+                <% } %>
+
+                <!-- Edit Category Form -->
+                <form action="/admin/dashboard/categories/edit/<%= category.id %>" method="POST">
+                    <label for="categoryName" class="block text-sm font-medium leading-5 text-gray-700">Category Name</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <input id="categoryName" name="categoryName" class="form-input py-2 px-3 block w-full leading-5 rounded-md transition duration-150 ease-in-out sm:text-sm sm:leading-5" value="<%= category.name %>" required>
+                    </div>
+
+                    <div class="mt-6">
+                        <button type="submit" class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-700">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

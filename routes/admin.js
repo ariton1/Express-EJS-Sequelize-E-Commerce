@@ -16,6 +16,8 @@ const db = require("../models");
 const User = db.User;
 const Role = db.Role;
 const VendorApplication = db.VendorApplication;
+const Category = db.Category;
+const Subcategory = db.Subcategory;
 const { Op } = require("sequelize");
 
 // Render the admin dashboard
@@ -175,6 +177,256 @@ router.get("/dashboard/all-applications", isLoggedIn, require2FA, isAdmin, async
     console.log(err);
     res.status(500).send("Server Error");
   }
+});
+
+// GET route to render the form for creating a new category
+router.get("/dashboard/categories/create", isLoggedIn, require2FA, isAdmin, (req, res) => {
+  res.render("admin/create-category", {
+    flash: req.flash(),
+  });
+});
+
+// POST route to handle the form submission and create a new category
+router.post("/categories/create", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  try {
+    // Extract category data from the request body
+    const { name } = req.body;
+
+    // Validate the data (you may add more validation)
+    if (!name) {
+      req.flash("error", "Category name is required.");
+      return res.redirect("/categories/create");
+    }
+
+    // Create the category in the database
+    await Category.create({
+      name: name,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      // Add other fields if needed
+    });
+
+    req.flash("success", "Category created successfully.");
+    res.redirect("/admin/dashboard/manage-categories"); // Redirect to the manage-categories page
+  } catch (error) {
+    console.error("Error creating category:", error);
+    req.flash("error", "An error occurred while creating the category.");
+    res.redirect("/categories/create");
+  }
+});
+
+// GET route to render the form for creating a new subcategory
+router.get("/dashboard/subcategories/create", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  // Fetch existing categories from the database (you may customize this based on your models)
+  const categories = await Category.findAll();
+
+  res.render("admin/create-subcategory", {
+    categories: categories,
+    flash: req.flash(),
+  });
+});
+
+// POST route to handle the form submission and create a new subcategory
+router.post("/subcategories/create", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  try {
+    // Extract subcategory data from the request body
+    const { name, category_id } = req.body;
+
+    // Validate the data (you may add more validation)
+    if (!name || !category_id) {
+      req.flash("error", "Subcategory name and category are required.");
+      return res.redirect("/subcategories/create");
+    }
+
+    // Create the subcategory in the database
+    await Subcategory.create({
+      name: name,
+      category_id: category_id,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    req.flash("success", "Subcategory created successfully.");
+    res.redirect("/admin/dashboard/manage-categories"); // Redirect to the manage-categories page
+  } catch (error) {
+    console.error("Error creating subcategory:", error);
+    req.flash("error", "An error occurred while creating the subcategory.");
+    res.redirect("/subcategories/create");
+  }
+});
+
+// Edit Category Route
+router.get("/dashboard/categories/edit/:categoryId", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  // Fetch the category from the database based on categoryId
+  const categoryId = req.params.categoryId;
+  const category = await Category.findByPk(categoryId);
+
+  if (!category) {
+    req.flash("error", "Category not found");
+    return res.redirect("/admin/dashboard/manage-categories");
+  }
+
+  // Render the page with the category data
+  res.render("admin/edit-category", {
+    title: "Edit Category",
+    category: category,
+    flash: req.flash(),
+  });
+});
+
+// Handle POST requests for editing category
+router.post("/dashboard/categories/edit/:categoryId", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  const categoryId = req.params.categoryId;
+  const { categoryName } = req.body;
+
+  try {
+    // Find the category in the database
+    const category = await Category.findByPk(categoryId);
+
+    if (!category) {
+      req.flash("error", "Category not found");
+      return res.redirect("/admin/dashboard/manage-categories");
+    }
+
+    // Update the category name
+    category.name = categoryName;
+
+    // Save the changes to the database
+    await category.save();
+
+    req.flash("success", "Category updated successfully");
+    res.redirect("/admin/dashboard/manage-categories");
+  } catch (error) {
+    console.error("Error updating category:", error);
+    req.flash("error", "Error updating category");
+    res.redirect("/admin/dashboard/manage-categories");
+  }
+});
+
+// Delete Category Route
+router.get("/dashboard/categories/delete/:categoryId", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  // Fetch the category from the database based on categoryId
+  const categoryId = req.params.categoryId;
+  const category = await Category.findByPk(categoryId);
+
+  if (!category) {
+    req.flash("error", "Category not found");
+    return res.redirect("/admin/dashboard/manage-categories");
+  }
+
+  // Delete the category and its subcategories
+  await category.destroy();
+
+  req.flash("success", "Category and its subcategories deleted successfully");
+  res.redirect("/admin/dashboard/manage-categories");
+});
+
+// Edit Subcategory Route
+router.get(
+  "/dashboard/subcategories/edit/:subcategoryId",
+  isLoggedIn,
+  require2FA,
+  isAdmin,
+  async (req, res) => {
+    // Fetch the subcategory from the database based on subcategoryId
+    const subcategoryId = req.params.subcategoryId;
+    const subcategory = await Subcategory.findByPk(subcategoryId);
+
+    if (!subcategory) {
+      req.flash("error", "Subcategory not found");
+      return res.redirect("/admin/dashboard/manage-categories");
+    }
+
+    // Render the page with the subcategory data
+    res.render("admin/edit-subcategory", {
+      title: "Edit Subcategory",
+      subcategory: subcategory,
+      flash: req.flash(),
+    });
+  }
+);
+
+// Handle POST requests for editing subcategory
+router.post(
+  "/dashboard/subcategories/edit/:subcategoryId",
+  isLoggedIn,
+  require2FA,
+  isAdmin,
+  async (req, res) => {
+    const subcategoryId = req.params.subcategoryId;
+    const { subcategoryName } = req.body;
+
+    try {
+      // Find the subcategory in the database
+      const subcategory = await Subcategory.findByPk(subcategoryId);
+
+      if (!subcategory) {
+        req.flash("error", "Subcategory not found");
+        return res.redirect("/admin/dashboard/manage-categories");
+      }
+
+      // Update the subcategory name
+      subcategory.name = subcategoryName;
+
+      // Save the changes to the database
+      await subcategory.save();
+
+      req.flash("success", "Subcategory updated successfully");
+      res.redirect("/admin/dashboard/manage-categories");
+    } catch (error) {
+      console.error("Error updating subcategory:", error);
+      req.flash("error", "Error updating subcategory");
+      res.redirect("/admin/dashboard/manage-categories");
+    }
+  }
+);
+
+// Delete Subcategory Route
+router.get(
+  "/dashboard/subcategories/delete/:subcategoryId",
+  isLoggedIn,
+  require2FA,
+  isAdmin,
+  async (req, res) => {
+    // Fetch the subcategory from the database based on subcategoryId
+    const subcategoryId = req.params.subcategoryId;
+    const subcategory = await Subcategory.findByPk(subcategoryId);
+
+    if (!subcategory) {
+      req.flash("error", "Subcategory not found");
+      return res.redirect("/admin/dashboard/manage-categories");
+    }
+
+    // Delete the subcategory
+    await subcategory.destroy();
+
+    req.flash("success", "Subcategory deleted successfully");
+    res.redirect("/admin/dashboard/manage-categories");
+  }
+);
+
+router.get("/dashboard/manage-categories", isLoggedIn, require2FA, isAdmin, async (req, res) => {
+  // Get and Verify the JWT
+  const token = req.cookies.token;
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const userId = decoded.id;
+
+  // Fetch the user's profile data from the database using their id
+  const user = await User.findOne({ where: { id: userId } });
+
+  //Fetch the user's role
+  const role = await Role.findOne({ where: { id: user.roleId } });
+
+  const categories = await Category.findAll();
+  const subcategories = await Subcategory.findAll();
+
+  res.render("admin/manage-categories", {
+    user: user,
+    role: role,
+    flash: req.flash(),
+    categories: categories,
+    subcategories: subcategories,
+  });
 });
 
 router.get("/application/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
@@ -368,6 +620,7 @@ router.post(
     }
   }
 );
+
 router.get("/unban/:id", isLoggedIn, require2FA, isAdmin, async (req, res) => {
   try {
     const user = await User.findByPk(req.params.id);

@@ -654,6 +654,9 @@ router.get("/user/:id", isLoggedIn, require2FA, async (req, res) => {
   // Fetch the user's profile data from the database using their id
   const user = await User.findOne({ where: { id: userId } });
 
+  const userIdOfVisitedUser = req.params.id;
+  const visitedUser = await User.findOne({ where: { id: userIdOfVisitedUser } });
+
   //Fetch the user's role
   const role = await Role.findOne({ where: { id: user.roleId } });
 
@@ -664,7 +667,7 @@ router.get("/user/:id", isLoggedIn, require2FA, async (req, res) => {
         return res.status(404).send("User not found");
       }
 
-      const title = user.username;
+      const title = visitedUser.username;
       // Render the user profile page
       res.render("users/profile", { user, role: role, title });
     })

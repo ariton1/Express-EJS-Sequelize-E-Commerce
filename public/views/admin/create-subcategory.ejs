@@ -1,0 +1,37 @@
+<% title = "Create Subcategory" %>
+<%- include('../partials/header'); %>
+
+<div class="flex flex-row w-1/2">
+    <%- include('../partials/sidebar'); %>
+    <div class="px-4 py-5">
+        <div class="py-2 inline-block min-w-full">
+            <!-- Your subcategory creation form goes here -->
+            <form action="/admin/subcategories/create" method="post">
+                <label for="name">Subcategory Name:</label>
+                <input type="text" id="name" name="name" required>
+                <!-- Assuming you have a select element to choose the category -->
+                <label for="category">Select Category:</label>
+                <select id="category" name="category_id" required>
+                    <% categories.forEach((category) => { %>
+                        <option value="<%= category.id %>"><%= category.name %></option>
+                    <% }); %>
+                </select>
+                <button type="submit">Create Subcategory</button>
+            </form>
+            <% if (flash.error) { %>
+                <div class="bg-red-500 p-4 mb-4">
+                    <% flash.error.forEach((msg) => { %>
+                        <p><%= msg %></p>
+                    <% }); %>
+                </div>
+            <% } %>
+            <% if (flash.success) { %>
+                <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+                    <%= flash.success %>
+                </p>
+            <% } %>
+        </div>
+    </div>
+</div>
+</body>
+</html>
