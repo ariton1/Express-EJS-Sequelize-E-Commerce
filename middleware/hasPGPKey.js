@@ -1,15 +1,12 @@
-const jwt = require("jsonwebtoken");
+const getUserIdFromToken = require("../utils/getUserIdFromToken");
 
-// Import the database models
 const db = require("../models");
 const User = db.User;
 const PGPKey = db.PGPKey;
 
 async function hasPGPKey(req, res, next) {
   try {
-    const token = req.cookies.token;
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const userId = decoded.id;
+    const userId = getUserIdFromToken(req);
 
     const user = await User.findOne({ include: [{ model: PGPKey, where: { user_id: userId } }] });
     const pgpKey = user.PGPKey;

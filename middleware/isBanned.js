@@ -1,14 +1,11 @@
 const jwt = require("jsonwebtoken");
 
-// Middleware to check if the user is banned
 async function isBanned(req, res, next) {
   const db = require("../models");
   const User = db.User;
 
-  // Get and Verify the JWT
   const token = req.cookies.token;
 
-  // Check if the user is not logged in
   if (!token) {
     return res.redirect("/users/login");
   }
