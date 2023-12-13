@@ -19,13 +19,11 @@
                     </p>
                 <% } %>
 
-                <!-- Buttons for navigating to create categories and subcategories -->
                 <div class="mb-4">
                     <a href="/admin/dashboard/categories/create" class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-700">Create Category</a>
                     <a href="/admin/dashboard/subcategories/create" class="px-4 py-2 bg-indigo-500 text-white rounded hover:bg-indigo-700">Create Subcategory</a>
                 </div>
 
-                <!-- Table-like structure for displaying categories and subcategories -->
                 <table class="min-w-full">
                     <thead>
                         <tr>
@@ -38,11 +36,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Loop through categories -->
                         <% categories.forEach((category) => { %>
                             <tr>
                                 <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
-                                    <%= category.name %> <!-- Category Name -->
+                                    <%= category.name %> 
                                 </td>
                                 <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5">
                                     <a href="/admin/dashboard/categories/edit/<%= category.id %>" class="text-indigo-600 hover:text-indigo-900">Rename</a>
@@ -50,11 +47,10 @@
                                 </td>
                             </tr>
 
-                            <!-- Loop through subcategories under this category -->
                             <% subcategories.filter((subcategory) => subcategory.category_id === category.id).forEach((subcategory) => { %>
                                 <tr>
                                     <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5 font-medium text-gray-900">
-                                         ----- <%= subcategory.name %> <!-- Subcategory Name -->
+                                         ----- <%= subcategory.name %> 
                                     </td>
                                     <td class="px-6 py-4 whitespace-no-wrap text-sm leading-5">
                                         <a href="/admin/dashboard/subcategories/edit/<%= subcategory.id %>" class="text-indigo-600 hover:text-indigo-900">Rename</a>

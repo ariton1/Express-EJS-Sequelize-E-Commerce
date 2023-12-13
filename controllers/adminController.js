@@ -143,7 +143,7 @@ exports.renderCreateCategory = (req, res) => {
   });
 };
 
-exports.createCategory = async (res, req) => {
+exports.createCategory = async (req, res) => {
   try {
     // Extract category data from the request body
     const { name } = req.body;

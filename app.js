@@ -3,8 +3,8 @@ const app = express();
 const port = 5000;
 require("dotenv").config();
 
-const bodyParser = require("body-parser");
 const flash = require("connect-flash");
+const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const cookieParser = require("cookie-parser");
 const sequelize = require("./config/connection");
@@ -15,6 +15,7 @@ const adminRouter = require("./routes/adminRouter");
 const buyerRouter = require("./routes/buyerRouter");
 const pgpRouter = require("./routes/pgpRouter");
 const bannedRouter = require("./routes/bannedRouter");
+const productRouter = require("./routes/productRouter");
 
 // Import middlewares
 const isLoggedIn = require("./middleware/isLoggedIn");
@@ -49,6 +50,7 @@ app.use("/admin", adminRouter);
 app.use("/buyer", buyerRouter);
 app.use("/pgp", pgpRouter);
 app.use("/banned", bannedRouter);
+app.use("/product", productRouter);
 
 app.use(express.static("public"));
 
@@ -63,7 +65,7 @@ app.get("/", isLoggedIn, require2FA, isBanned, async (req, res) => {
   const user = await User.findOne({ where: { id: userId } });
   const role = await Role.findOne({ where: { id: user.roleId } });
 
-  res.render("index", { role: role });
+  res.render("index", { user, role });
 });
 
 app.listen(port, () => {

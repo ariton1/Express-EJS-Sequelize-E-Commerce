@@ -340,7 +340,7 @@ exports.renderChangePassword = async (req, res) => {
 
   const user = await User.findOne({ where: { id: userId } });
   const role = await Role.findOne({ where: { id: user.roleId } });
-  res.render("users/settings/change-password", { flash: req.flash(), role: role });
+  res.render("users/settings/change-password", { flash: req.flash(), user, role });
 };
 
 exports.changePassword = async (req, res) => {

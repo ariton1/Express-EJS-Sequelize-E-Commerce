@@ -8,8 +8,8 @@
           <% if (role.name === 'admin') { %>
             <a href="/admin/dashboard" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Dashboard</a>
           <% } %>
-          <% if (role.name === 'vendor') { %>
-            <a href="/vendor/create-product" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Create New Product</a>
+          <% if (role.name !== 'buyer' && user.is_banned === false) { %>
+            <a href="/product/new" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Create New Product</a>
           <% } %>
           <a href="/users/settings" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Account Settings</a>
           <a href="/users/logout" class="px-3 py-2 text-sm font-semibold text-white uppercase hover:text-gray-300">Logout</a>

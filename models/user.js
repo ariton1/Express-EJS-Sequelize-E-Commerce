@@ -24,6 +24,12 @@ module.exports = (sequelize, DataTypes) => {
         onDelete: "SET NULL",
         onUpdate: "CASCADE",
       });
+
+      User.hasMany(models.Product, {
+        foreignKey: "user_id",
+        onDelete: "SET NULL",
+        onUpdate: "CASCADE",
+      });
     }
   }
   User.init(
