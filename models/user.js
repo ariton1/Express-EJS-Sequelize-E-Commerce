@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       User.hasMany(models.Product, {
-        foreignKey: "user_id",
+        foreignKey: "username",
         onDelete: "SET NULL",
         onUpdate: "CASCADE",
       });
