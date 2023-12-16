@@ -284,10 +284,11 @@ exports.renderSet2FA = async (req, res) => {
       res.send("Something went wrong. Please refresh the page");
     }
     res.render("users/set-2fa", {
+      user,
+      role,
       qrCodeUrl: src,
       secret: secret.base32,
       error: req.flash("error"),
-      role: role,
     });
   });
 };
