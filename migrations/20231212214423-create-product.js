@@ -17,10 +17,6 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      username: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
       in_stock: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -53,8 +49,18 @@ module.exports = {
         allowNull: false,
       },
       subcategory_id: {
-        type: Sequelize.STRING,
-        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: {
+          model: "Subcategories",
+          key: "id",
+        },
+      },
+      user_id: {
+        type: Sequelize.UUID,
+        references: {
+          model: "Users",
+          key: "id",
+        },
       },
       createdAt: {
         allowNull: false,

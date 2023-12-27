@@ -15,19 +15,19 @@ module.exports = (sequelize, DataTypes) => {
 
       User.hasOne(models.PGPKey, {
         foreignKey: "user_id",
-        onDelete: "SET NULL",
+        onDelete: "CASCADE",
         onUpdate: "CASCADE",
       });
 
       User.hasMany(models.VendorApplication, {
         foreignKey: "user_id",
-        onDelete: "SET NULL",
+        onDelete: "CASCADE",
         onUpdate: "CASCADE",
       });
 
       User.hasMany(models.Product, {
-        foreignKey: "username",
-        onDelete: "SET NULL",
+        foreignKey: "user_id",
+        onDelete: "CASCADE",
         onUpdate: "CASCADE",
       });
     }

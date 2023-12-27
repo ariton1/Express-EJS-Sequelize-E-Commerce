@@ -7,13 +7,13 @@ module.exports = {
       {
         id: "6da769a6-28d5-424c-9690-63b359f8a6af",
         username: "ariton",
-        password: "$2a$10$aTSUcAc/4fejy6uwXlUWFubd7nO9vZ9NDcQN5kYYwVHXfl1y7lbV6",
+        password: "$2a$10$KGvdIQ3aU5CDP4WiGdOFIOBoEmmsk28Qz2pOrq0r7/XTVPkQhLL9y",
         twofactor_enabled: true,
         twofactor_secret:
-          "U2FsdGVkX18wzHGtdxywgxUSLYALn8VK+h2mAVKgh1z2lwZymDPR99Sm/ANAsvRVGcQJhkfozQhsevx+eE075w==",
-        phrase: "asdasd",
+          "U2FsdGVkX1+Oc72YLsAF3hzfyYApPig9IMwmlRuutfp5R0FY1m/dPgEe4axhW9vs6ww+LLBZCP9tAMSXIjfSEA==",
+        phrase: "davster",
         mnemonic:
-          "U2FsdGVkX1+zIWRW5RSBoq7PS8UnY6jNm01GljJLXoNnToB59hujCNH7n/MGoOXH3FHMalILqQpqg4n/Y/o2iqIEjS/DvzfNtr9enCgiSmldk5L79aqcFpQ371eLtxtLmPCPVDdesVGURUazFU1fOQuxF1ZKTl0kfoLvo8f4xD8+epSNbIF4ojXUTcQPsNZFegLzPx2ZHPSOS0mLKet9Bn8hsZb1mi/XvQjm7C1h7v0=",
+          "U2FsdGVkX1+2Lwc0bBc41Md38R2CNJWp7KPVWdXVGwMNXp12pB0w0OPdBBx6yDRWUiJ6Nzen0uMDQHOu50Re/myIszuHaDjhbBITAr6nzqzK3TV/LRElGSbeHnxLUvwvMDo8T4gOdgs6h+mU9Q16OSzWczwHnI0fMb7eAt+P/7WfqoSPydGUvvnrKHRI+WF7U9VVeFNCvO/JE1DdVNa/azQmPqiHpTBmkSOe9LFnlgU=",
         createdAt: new Date(),
         updatedAt: new Date(),
         roleId: 4,

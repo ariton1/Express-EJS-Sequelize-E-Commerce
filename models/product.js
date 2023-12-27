@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       });
 
       Product.belongsTo(models.User, {
-        foreignKey: "username",
+        foreignKey: "user_id",
       });
     }
   }
@@ -21,7 +21,6 @@ module.exports = (sequelize, DataTypes) => {
     {
       name: DataTypes.STRING,
       type: DataTypes.STRING,
-      username: DataTypes.STRING,
       in_stock: DataTypes.BOOLEAN,
       ship_to: DataTypes.JSON,
       sub_products: DataTypes.JSON,
@@ -30,7 +29,6 @@ module.exports = (sequelize, DataTypes) => {
       unit: DataTypes.STRING,
       source: DataTypes.STRING,
       sold: DataTypes.INTEGER,
-      subcategory_id: DataTypes.STRING,
     },
     {
       sequelize,
