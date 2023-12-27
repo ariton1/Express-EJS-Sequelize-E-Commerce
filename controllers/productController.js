@@ -43,9 +43,6 @@ exports.createProduct = async (req, res) => {
     const productId = uuid.v4();
     const userId = getUserIdFromToken(req);
 
-    const user = await User.findOne({ where: { id: userId } });
-    const username = user.username;
-
     // Create an 'uploads' folder if it doesn't exist
     const uploadFolder = path.join(__dirname, "..", "uploads");
     if (!fs.existsSync(uploadFolder)) {
@@ -77,7 +74,7 @@ exports.createProduct = async (req, res) => {
       source,
       subcategory_id,
       sold: 0,
-      username,
+      user_id: userId,
     });
 
     res.redirect(`/product/${productId}`);
