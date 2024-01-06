@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const port = 5000;
+const path = require("path");
 require("dotenv").config();
 
 const flash = require("connect-flash");
@@ -53,6 +54,7 @@ app.use("/banned", bannedRouter);
 app.use("/product", productRouter);
 
 app.use(express.static("public"));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.set("view engine", "ejs");
 app.set("views", "public/views");
@@ -65,7 +67,7 @@ app.get("/", isLoggedIn, require2FA, isBanned, async (req, res) => {
   const user = await User.findOne({ where: { id: userId } });
   const role = await Role.findOne({ where: { id: user.roleId } });
 
-  res.render("index", { user, role });
+  res.render("index", { user, role, flash: req.flash() });
 });
 
 app.listen(port, () => {

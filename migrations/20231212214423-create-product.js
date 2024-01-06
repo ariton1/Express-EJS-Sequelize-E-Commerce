@@ -48,6 +48,14 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
       },
+      quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      currency: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       subcategory_id: {
         type: Sequelize.INTEGER,
         references: {

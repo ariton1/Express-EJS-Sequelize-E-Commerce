@@ -166,10 +166,8 @@ exports.renderRegister = (req, res) => {
 };
 
 exports.register = async (req, res) => {
-  // Check for validation errors
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    // Set flash messages and redirect the user back to the register page
     req.flash(
       "error",
       errors.array().map((error) => error.msg)

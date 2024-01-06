@@ -1,40 +1,40 @@
-<% title = "Create New Product" %>
+<% title = "Edit Product" %>
 <%- include('../partials/header'); %>	
-<%- include ('../partials/navbar'); %>	
+<%- include('../partials/navbar'); %>	
 <div class="container mx-auto mt-8">
   <% if (flash.error) { %>
     <div class="bg-red-500 p-4 mb-4">
-        <% flash.error.forEach((msg) => { %>
+      <% flash.error.forEach((msg) => { %>
         <p><%= msg %></p>
-        <% }); %>
+      <% }); %>
     </div>
   <% } %>
   <% if (flash.success) { %>
-      <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
-          <%= flash.success %>
-      </p>
+    <p class="text-center font-semibold text-green-500 rounded-md bg-green-100 p-4">
+      <%= flash.success %>
+    </p>
   <% } %>
   <div class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-    <h1 class="text-2xl font-bold text-center mb-4">Create New Product</h1>
-    <form class="max-w-md mx-auto" action="/product/new" method="post" enctype="multipart/form-data">
+    <h1 class="text-2xl font-bold text-center mb-4">Edit Product</h1>
+    <form class="max-w-md mx-auto" action="/product/<%= product.id %>/edit" method="post" enctype="multipart/form-data">
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="name">Name</label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" name="name" type="text" placeholder="Product Name" required />
+        <input value="<%= product.name %>" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="name" name="name" type="text" placeholder="Product Name" required />
       </div>
 
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="type">Type</label>
         <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="type" name="type" required>
-          <option value="physical">Physical</option>
-          <option value="virtual">Virtual</option>
+          <option value="physical" <%= product.type === 'physical' ? 'selected' : '' %>>Physical</option>
+          <option value="virtual" <%= product.type === 'virtual' ? 'selected' : '' %>>Virtual</option>
         </select>
       </div>
 
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="in_stock">In Stock</label>
         <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="in_stock" name="in_stock" required>
-          <option value="true">Yes</option>
-          <option value="false">No</option>
+          <option value="true" <%= product.in_stock === 'true' ? 'selected' : '' %>>Yes</option>
+          <option value="false" <%= product.in_stock === 'false' ? 'selected' : '' %>>No</option>
         </select>
       </div>
 
@@ -43,18 +43,18 @@
         <div class="grid grid-cols-2 gap-4">
           <% regions.forEach(region => { %>
             <div class="flex items-center">
-              <input type="checkbox" id="<%= region %>" name="ship_to" value="<%= region %>">
+              <input type="checkbox" id="<%= region %>" name="ship_to" value="<%= region %>" <%= product.ship_to.includes(region) ? 'checked' : '' %>>
               <label for="<%= region %>" class="ml-2"><%= region %></label>
             </div>
           <% }); %>
         </div>
       </div>      
-      
+            
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="unit">Unit</label>
         <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="unit" name="unit" required>
           <% units.forEach(unit => { %>
-            <option value="<%= unit %>"><%= unit %></option>
+            <option value="<%= unit %>" <%= product.unit === unit ? 'selected' : '' %>><%= unit %></option>
           <% }); %>
         </select>
       </div>
@@ -63,7 +63,7 @@
         <label class="block text-gray-700 text-sm font-bold mb-2" for="currency">Currency</label>
         <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="currency" name="currency" required>
           <% currencies.forEach(currency => { %>
-            <option value="<%= currency %>"><%= currency %></option>
+            <option value="<%= currency %>" <%= product.currency === currency ? 'selected' : '' %>><%= currency %></option>
           <% }); %>
         </select>
       </div>
@@ -72,39 +72,39 @@
         <label class="block text-gray-700 text-sm font-bold mb-2" for="source">Source</label>
         <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="source" name="source" required>
           <% regions.forEach(region => { %>
-            <option value="<%= region %>"><%= region %></option>
+            <option value="<%= region %>" <%= product.source === region ? 'selected' : '' %>><%= region %></option>
           <% }); %>
         </select>
       </div>
 
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="sub_products">Sub-products</label>
-        <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="sub_products" name="sub_products" rows="4" placeholder="Enter sub-products (quantity-price e.g., 1 5 USD - 2 9)" required></textarea>
+        <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="sub_products" name="sub_products" rows="4" placeholder="Enter sub-products (quantity-price e.g., 1 5 USD - 2 9)" required><%= product.sub_products %></textarea>
       </div> 
 
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="quantity">Quantity</label>
-        <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="quantity" name="quantity" type="number" placeholder="Product Quantity" required />
+        <input value="<%= product.quantity %>" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="quantity" name="quantity" type="number" placeholder="Product Quantity" required />
       </div> 
       
       <div class="mb-4">
         <label class="block text-gray-700 text-sm font-bold mb-2" for="subcategory_id">Subcategory</label>
         <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="subcategory_id" name="subcategory_id" required>
           <% subcategories.forEach(subcategory => { %>
-            <option value="<%= subcategory.id %>"><%= subcategory.name %></option>
-            <% }); %>
-          </select>
-        </div>
+            <option value="<%= subcategory.id %>" <%= product.subcategory_id == subcategory.id ? 'selected' : '' %>><%= subcategory.name %></option>
+          <% }); %>
+        </select>
+      </div>
 
-        <div class="mb-4">
-          <label class="block text-gray-700 text-sm font-bold mb-2" for="image">Image</label>
-          <input type="file" accept="image/*" id="image" name="image" required />
-        </div>
+      <div class="mb-4">
+        <label class="block text-gray-700 text-sm font-bold mb-2" for="image">Image</label>
+        <input type="file" accept="image/*" id="image" name="image" />
+        <p class="text-gray-600 text-sm mt-2">Leave this blank if you don't want to change the image.</p>
+      </div>
 
-        <div class="flex items-center justify-center mt-4">
-          <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Create Product</button>
-        </div>
-
+      <div class="flex items-center justify-center mt-4">
+        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">Save Changes</button>
+      </div>
     </form>
   </div>
 </div>
