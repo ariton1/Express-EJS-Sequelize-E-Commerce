@@ -1,0 +1,80 @@
+<% title = 'Chat' %>
+<%- include('../partials/header'); %>
+<%- include('../partials/navbar'); %>
+
+<h1>Chat with <%= receiver.username %></h1>
+
+<div id="messageContainer">
+  <% messages.forEach(message => { %>
+    <% if (message.user_id === user.id) { %>
+      <div class="bg-blue-500 text-white p-2 rounded-lg my-2 mb-4" id="message<%= message.id %>">
+        <strong><%= message.User.username %>:</strong> <%= message.content %>
+        <% if (message.id === lastSeenMessageId) { %>
+          <div id="seenIndicator" class="text-green-500">Seen</div>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="bg-gray-300 text-black p-2 rounded-lg my-2 mb-4">
+        <strong><%= message.User.username %>:</strong> <%= message.content %>
+      </div>
+    <% } %>
+  <% }); %>
+</div>
+
+<form id="messageForm" style="display: flex; flex-direction: column; gap: 10px; width: 200px;" class="mt-4">
+  <textarea id="messageContent" style="height: 100px;" placeholder="Type your message"></textarea>
+  <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mb-4" type="submit">Send</button>
+</form>
+
+<script>
+  const socket = window.socket;
+  
+  socket.emit('userConnected', '<%= user.id %>');
+  socket.emit('readMessage', { messageId: '<%= lastSeenMessageId %>', senderId: '<%= user.id %>' });
+  
+  const senderId = '<%= user.id %>';
+  const messageContainer = document.getElementById('messageContainer');
+  
+  socket.on('receiveMessage', (data) => {
+    const newMessage = document.createElement('div');
+    newMessage.className = data.username === '<%= user.username %>' ? "bg-blue-500 text-white p-2 rounded-lg my-2 mb-4" : "bg-gray-300 text-black p-2 rounded-lg my-2 mb-4";
+    newMessage.id = `message${data.id}`;
+
+    newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.content}`;
+
+    messageContainer.appendChild(newMessage);
+  });
+
+  socket.on('lastMessageSeen', (messageId) => {
+    console.log(`lastMessageSeen event received. messageId: ${messageId}`);
+
+    if (messageId === '<%= lastSeenMessageId %>') {
+      seenIndicator.style.display = 'block';
+      seenIndicator.textContent = 'Seen';
+    } else {
+      seenIndicator.style.display = 'none';
+    }
+});
+  
+  messageForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    
+    const messageContent = document.getElementById('messageContent').value;
+    
+    if (!messageContent.trim()) {
+      return;
+    }
+    
+    socket.emit('sendMessage', {
+      from: '<%= user.id %>', 
+      to: '<%= receiver.id %>',
+      content: messageContent,
+      username: '<%= user.username %>'
+    });
+    
+    document.getElementById('messageContent').value = '';
+  });
+  
+</script>
+
+<%- include('../partials/footer'); %>
