@@ -60,10 +60,11 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("readMessage", async (data) => {
-    const { messageId, senderId } = data;
+    const { messageId, senderId, receiverId } = data;
     console.log(`readMessage event received. messageId: ${messageId}, senderId: ${senderId}`);
 
     io.to(users[senderId]).emit("lastMessageSeen", messageId);
+    io.to(users[receiverId]).emit("lastMessageSeen", messageId);
   });
 
   socket.on("sendMessage", async (data) => {

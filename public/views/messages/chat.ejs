@@ -27,53 +27,59 @@
 </form>
 
 <script>
-  const socket = window.socket;
-  
-  socket.emit('userConnected', '<%= user.id %>');
-  socket.emit('readMessage', { messageId: '<%= lastSeenMessageId %>', senderId: '<%= user.id %>' });
-  
-  const senderId = '<%= user.id %>';
-  const messageContainer = document.getElementById('messageContainer');
-  
-  socket.on('receiveMessage', (data) => {
-    const newMessage = document.createElement('div');
-    newMessage.className = data.username === '<%= user.username %>' ? "bg-blue-500 text-white p-2 rounded-lg my-2 mb-4" : "bg-gray-300 text-black p-2 rounded-lg my-2 mb-4";
-    newMessage.id = `message${data.id}`;
+const socket = window.socket;
+let lastSeenMessageId = '<%= lastSeenMessageId %>';
+let senderId = '<%= user.id %>';
+const messageContainer = document.getElementById('messageContainer');
 
-    newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.content}`;
+socket.emit('userConnected', senderId);
+socket.emit('readMessage', { messageId: lastSeenMessageId, senderId: senderId, receiverId: '<%= receiver.id %>' });
 
-    messageContainer.appendChild(newMessage);
-  });
+socket.on('receiveMessage', (data) => {
+  const newMessage = document.createElement('div');
+  newMessage.className = data.username === '<%= user.username %>' ? "bg-blue-500 text-white p-2 rounded-lg my-2 mb-4" : "bg-gray-300 text-black p-2 rounded-lg my-2 mb-4";
+  newMessage.id = `message${data.id}`;
 
-  socket.on('lastMessageSeen', (messageId) => {
-    console.log(`lastMessageSeen event received. messageId: ${messageId}`);
+  newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.content}`;
 
-    if (messageId === '<%= lastSeenMessageId %>') {
+  const seenIndicator = document.createElement('div');
+  seenIndicator.className = 'text-green-500';
+  seenIndicator.textContent = data.id === lastSeenMessageId ? 'Seen' : '';
+  newMessage.appendChild(seenIndicator);
+
+  messageContainer.appendChild(newMessage);
+});
+
+socket.on('lastMessageSeen', (messageId) => {
+  console.log(`lastMessageSeen event received. messageId: ${messageId}`);
+
+  if (messageId === lastSeenMessageId) {
+    const seenIndicator = document.querySelector(`#message${lastSeenMessageId} .text-green-500`);
+    if (seenIndicator) {
       seenIndicator.style.display = 'block';
       seenIndicator.textContent = 'Seen';
-    } else {
-      seenIndicator.style.display = 'none';
     }
+  }
 });
-  
-  messageForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    
-    const messageContent = document.getElementById('messageContent').value;
-    
-    if (!messageContent.trim()) {
-      return;
-    }
-    
-    socket.emit('sendMessage', {
-      from: '<%= user.id %>', 
-      to: '<%= receiver.id %>',
-      content: messageContent,
-      username: '<%= user.username %>'
-    });
-    
-    document.getElementById('messageContent').value = '';
+
+messageForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const messageContent = document.getElementById('messageContent').value;
+
+  if (!messageContent.trim()) {
+    return;
+  }
+
+  socket.emit('sendMessage', {
+    from: senderId,
+    to: '<%= receiver.id %>',
+    content: messageContent,
+    username: '<%= user.username %>'
   });
+
+  document.getElementById('messageContent').value = '';
+});
   
 </script>
 
