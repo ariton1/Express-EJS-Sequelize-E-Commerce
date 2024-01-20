@@ -57,7 +57,10 @@ io.on("connection", async (socket) => {
 
   socket.on("pageChange", (pathname) => {
     console.log(`Page changed to: ${pathname}`);
-    // to be handled
+    const userId = users[socket.id];
+    if (userId) {
+      users[userId].currentPath = pathname;
+    }
   });
 
   socket.on("userConnected", (userId) => {
@@ -92,7 +95,9 @@ io.on("connection", async (socket) => {
         username: username,
       });
 
-      io.to(users[to]).emit("newMessageNotification");
+      if (!users[to].currentPath.startsWith("/chat")) {
+        io.to(users[to]).emit("newMessageNotification");
+      }
     } catch (error) {
       console.log("Failed to store message: ", error);
     }
