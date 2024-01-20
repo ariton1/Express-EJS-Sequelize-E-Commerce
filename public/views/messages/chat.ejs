@@ -9,10 +9,10 @@
     <% if (message.user_id === user.id) { %>
       <div class="bg-blue-500 text-white p-2 rounded-lg my-2 mb-4" id="message<%= message.id %>">
         <strong><%= message.User.username %>:</strong> <%= message.content %>
-        <% if (message.id === lastSeenMessageId) { %>
-          <div id="seenIndicator" class="text-green-500">Seen</div>
-        <% } %>
       </div>
+      <% if (message.id === lastSeenMessageId) { %>
+        <div id="seenIndicator" class="text-green-500">Seen</div>
+      <% } %>
     <% } else { %>
       <div class="bg-gray-300 text-black p-2 rounded-lg my-2 mb-4">
         <strong><%= message.User.username %>:</strong> <%= message.content %>
@@ -80,7 +80,6 @@ messageForm.addEventListener('submit', (e) => {
 
   document.getElementById('messageContent').value = '';
 });
-  
 </script>
 
 <%- include('../partials/footer'); %>
