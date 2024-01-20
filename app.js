@@ -55,6 +55,11 @@ let users = {};
 io.on("connection", async (socket) => {
   console.log("a user connected");
 
+  socket.on("pageChange", (pathname) => {
+    console.log(`Page changed to: ${pathname}`);
+    // to be handled
+  });
+
   socket.on("userConnected", (userId) => {
     users[userId] = socket.id;
   });
