@@ -15,5 +15,6 @@ Features:
 10. Live chat
 11. Flash messages
 12. Tailwind for UI
+13. HTTPS
 
 Web app is not complete and is still in development.
