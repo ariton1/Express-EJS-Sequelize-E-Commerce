@@ -13,5 +13,6 @@ Features:
 8. PGP for seller with control/check
 9. Image optimizer and Exif remover
 10. Live chat
+11. Flash messages
 
 Web app is not complete and is still in development.
