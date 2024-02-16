@@ -1,4 +1,4 @@
-# E-commerce Marketplace
+# Codex E-commerce Marketplace
 
 A web application that uses the following technologies: Express, EJS, Sequelize and Socket.io.
 Features:
@@ -16,5 +16,6 @@ Features:
 11. Flash messages
 12. Tailwind for UI
 13. HTTPS
+14. MVC architecture
 
 Web app is not complete and is still in development.
