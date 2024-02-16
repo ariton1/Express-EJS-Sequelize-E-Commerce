@@ -48,6 +48,7 @@ socket.on('receiveMessage', (data) => {
   newMessage.appendChild(seenIndicator);
 
   messageContainer.appendChild(newMessage);
+
 });
 
 socket.on('lastMessageSeen', (messageId) => {

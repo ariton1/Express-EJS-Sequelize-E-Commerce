@@ -1,13 +1,21 @@
 const express = require("express");
+
+const https = require("https");
+const fs = require("fs");
+const path = require("path");
+
+const options = {
+  key: fs.readFileSync("localhost-key.pem"),
+  cert: fs.readFileSync("localhost.pem"),
+};
+
 const app = express();
 
-const http = require("http");
 const socketIO = require("socket.io");
-const server = http.createServer(app);
+const server = https.createServer(options, app);
 const io = socketIO(server);
 
 const port = 5000;
-const path = require("path");
 require("dotenv").config();
 
 const flash = require("connect-flash");
@@ -58,6 +66,7 @@ io.on("connection", async (socket) => {
   socket.on("pageChange", (pathname) => {
     console.log(`Page changed to: ${pathname}`);
     const userId = users[socket.id];
+    console.log("user id:", userId);
     if (userId) {
       users[userId].currentPath = pathname;
     }
@@ -65,11 +74,11 @@ io.on("connection", async (socket) => {
 
   socket.on("userConnected", (userId) => {
     users[userId] = socket.id;
+    console.log("user id conn: ", users[userId]);
   });
 
   socket.on("readMessage", async (data) => {
     const { messageId, senderId, receiverId } = data;
-    console.log(`readMessage event received. messageId: ${messageId}, senderId: ${senderId}`);
 
     io.to(users[senderId]).emit("lastMessageSeen", messageId);
     io.to(users[receiverId]).emit("lastMessageSeen", messageId);
@@ -95,12 +104,32 @@ io.on("connection", async (socket) => {
         username: username,
       });
 
-      if (!users[to].currentPath.startsWith("/chat")) {
-        io.to(users[to]).emit("newMessageNotification");
-      }
+      io.emit("messageNotification", {
+        ...message.dataValues,
+        username: username,
+        to: to,
+      });
     } catch (error) {
       console.log("Failed to store message: ", error);
     }
+  });
+
+  socket.on("receiveMessage", (data) => {
+    const newMessage = document.createElement("div");
+    newMessage.className =
+      data.username === "<%= user.username %>"
+        ? "bg-blue-500 text-white p-2 rounded-lg my-2 mb-4"
+        : "bg-gray-300 text-black p-2 rounded-lg my-2 mb-4";
+    newMessage.id = `message${data.id}`;
+
+    newMessage.innerHTML = `<strong>${data.username}:</strong> ${data.content}`;
+
+    const seenIndicator = document.createElement("div");
+    seenIndicator.className = "text-green-500";
+    seenIndicator.textContent = data.id === lastSeenMessageId ? "Seen" : "";
+    newMessage.appendChild(seenIndicator);
+
+    messageContainer.appendChild(newMessage);
   });
 });
 
@@ -121,6 +150,15 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.set("view engine", "ejs");
 app.set("views", "public/views");
+
+app.use((req, res, next) => {
+  if (req.url.endsWith(".js")) {
+    res.setHeader("Content-Type", "text/javascript");
+  }
+  next();
+});
+
+app.use("/utils", express.static(path.join(__dirname, "utils")));
 
 require("./unbanUsers"); // run the cron job periodically
 
