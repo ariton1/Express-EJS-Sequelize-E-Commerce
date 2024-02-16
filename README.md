@@ -14,5 +14,6 @@ Features:
 9. Image optimizer and Exif remover
 10. Live chat
 11. Flash messages
+12. Tailwind for UI
 
 Web app is not complete and is still in development.
