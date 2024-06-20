@@ -34,7 +34,7 @@
     "postcss": "^8.4.20",
     "postcss-cli": "^10.1.0",
     "qrcode": "^1.5.1",
-    "sequelize": "^6.28.0",
+    "sequelize": "^6.37.3",
     "sharp": "^0.33.0",
     "socket.io": "^4.7.3",
     "speakeasy": "^2.0.0",
